@@ -1,8 +1,9 @@
 import { User } from '../models/user'
 import { ProjectPosition } from '../models/project-position'
+import { Method } from '../models/method'
 import * as constants from '../constants'
 
-const staticUser = [
+const staticUsers = [
     {
         firstname: 'admin',
         lastname: 'admin',
@@ -14,7 +15,7 @@ const staticUser = [
     }
 ]
 
-const staticProjectPosition = [
+const staticProjectPositions = [
     {
         name: 'Manager'
     },
@@ -23,8 +24,26 @@ const staticProjectPosition = [
     }
 ]
 
-export const createUser = async () => {
-    for (const user of staticUser) {
+const staticMethods = [
+    {
+        name: 'GET'
+    },
+    {
+        name: 'POST'
+    },
+    {
+        name: 'PUT'
+    },
+    {
+        name: 'PATH'
+    },
+    {
+        name: 'DELETE'
+    }
+]
+
+export const createUsers = async () => {
+    for (const user of staticUsers) {
         try {
             await User.create(user)
         } catch (err) {
@@ -33,10 +52,23 @@ export const createUser = async () => {
     }
 }
 
-export const createProjectPosition = async () => {
-    const projectPosition = await ProjectPosition.findAll()
-    if (projectPosition.length === 0) {
-        for (const position of staticProjectPosition) {
+export const createMethods = async () => {
+    const methods = await Method.findAll()
+    if (methods.length === 0) {
+        for (const method of staticMethods) {
+            try {
+                await Method.create(method)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    }
+}
+
+export const createProjectPositions = async () => {
+    const projectPositions = await ProjectPosition.findAll()
+    if (projectPositions.length === 0) {
+        for (const position of staticProjectPositions) {
             try {
                 await ProjectPosition.create(position)
             } catch (err) {

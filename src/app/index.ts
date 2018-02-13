@@ -33,8 +33,8 @@ export class Server {
                 console.log('Failed to connect to database')
             } else {
                 console.log('Connect to database')
-                initDB.createUser()
-                // initDB.createProjectPosition()
+                initDB.createUsers()
+                initDB.createMethods()
             }
         })
     }
