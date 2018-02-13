@@ -61,10 +61,6 @@ UserSchema.virtual('id').get(function () {
     return this._id.toHexString()
 })
 
-// UserSchema.virtual('fullName').get(function () {
-//     return this.firstname.toString() + ' ' + this.lastname.toString()
-// })
-
 UserSchema.plugin(timestamps)
 
 export default UserSchema
