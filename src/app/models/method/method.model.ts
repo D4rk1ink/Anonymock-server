@@ -32,4 +32,8 @@ export class Method {
     static async findAll (condition = {}, fields = '') {
         return await MethodModel.find(condition, fields)
     }
+
+    static async search (search, fields = '') {
+        return await MethodModel.find({ name: new RegExp(search, 'i') }, fields)
+    }
 }
