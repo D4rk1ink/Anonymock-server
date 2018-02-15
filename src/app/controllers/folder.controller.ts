@@ -62,7 +62,7 @@ export const search = async (req: Request, res: Response) => {
             if (all) {
                 sliceFolders = myFolders
             } else {
-                sliceFolders = myFolders.slice(+page - 1 * itemPerPage, +page * itemPerPage)
+                sliceFolders = myFolders.slice((page - 1 * itemPerPage), page * itemPerPage)
             }
             const folders = sliceFolders.map(folder => {
                 return {
