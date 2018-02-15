@@ -1,5 +1,6 @@
 import { Model, Document, model, Error } from 'mongoose'
 import UserSchema from './user.schema'
+import { Project } from '../project'
 
 interface IUserModel extends Document {
     firstname: string
@@ -49,5 +50,29 @@ export class User {
 
     static findAll (condition = {}, fields = '') {
         return UserModel.find(condition, fields)
+    }
+
+    static async searchProjectMembers (project, search, fields = '') {
+        // return await UserModel.find({
+        //     $and: [
+        //         { projects: project},
+        //         { $where: `new RegExp("${search}", "gi").test(this.firstname + " " + this.lastname)` }
+        //     ]
+        // }, fields)
+        let members: any = []
+        const myProject = (await Project.findById(project)
+                .populate('members.user', fields)
+                .exec())
+        if (myProject) {
+            members = myProject.members.filter(member => {
+                return new RegExp(search, 'gi').test(member.user.firstname + ' ' + member.user.lastname)
+            })
+        }
+        return members
+    }
+
+    static async searchUser (search, limit, fields = '') {
+        return await UserModel.find({ $where: `new RegExp("${search}", "gi").test(this.firstname + " " + this.lastname)` }, fields)
+            .limit(limit)
     }
 }
