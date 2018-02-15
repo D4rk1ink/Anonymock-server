@@ -55,7 +55,7 @@ export class Response {
         return await ResponseModel.find(condition, fields)
     }
 
-    static async search (endpoint, search, fields = '') {
-        return await ResponseModel.find({ endpoint: endpoint, name: new RegExp(search, 'gi') }, fields)
+    static async search (endpoint, search, environment, fields = '') {
+        return await ResponseModel.find({ endpoint: endpoint, environment: environment, name: new RegExp(search, 'gi') }, fields)
     }
 }

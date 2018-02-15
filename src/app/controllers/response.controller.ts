@@ -64,8 +64,8 @@ export const getById = async (req: Request, res: EResponse) => {
 
 export const search = async (req: Request, res: EResponse) => {
     if (verify.verifyMember(req, res)) {
-        const { endpoint, search } = req.query
-        const myResponses = await Response.search(endpoint, search, 'id name response')
+        const { endpoint, search, environment } = req.query
+        const myResponses = await Response.search(endpoint, search, environment, 'id name response')
         const data = myResponses.map(response => {
             return {
                 id: response.id,
