@@ -6,8 +6,18 @@ interface IResponseModel extends Document {
     id: string
     name: string
     environment: string
-    condition: any
-    response: any
+    condition: {
+        params: any,
+        headers: any,
+        body: any,
+        queryString: any
+    }
+    response: {
+        headers: any,
+        body: any,
+        delay: number,
+        statusCode: number
+    }
     endpoint: string
 }
 
