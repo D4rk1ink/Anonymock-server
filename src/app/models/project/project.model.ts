@@ -8,6 +8,7 @@ interface IProjectModel extends Document {
     description: string
     repository: string
     environments: string
+    folders: any[]
     database: any
     members: any[]
 }
@@ -32,15 +33,15 @@ export class Project {
         return await ProjectModel.findByIdAndRemove(id)
     }
 
-    static findById (id, fields = '') {
-        return ProjectModel.findById(id, fields)
+    static async findById (id, fields = '') {
+        return await ProjectModel.findById(id, fields)
     }
 
     static async findOne (condition) {
         return await  ProjectModel.findOne(condition)
     }
 
-    static findAll (condition = {}, fields = '') {
-        return ProjectModel.find(condition, fields)
+    static async findAll (condition = {}, fields = '') {
+        return await ProjectModel.find(condition, fields)
     }
 }

@@ -28,19 +28,19 @@ export class Folder {
         return await FolderModel.findByIdAndRemove(id)
     }
 
-    static findById (id, fields = '') {
-        return FolderModel.findById(id, fields)
+    static async findById (id, fields = '') {
+        return await FolderModel.findById(id, fields)
     }
 
     static async findOne (condition) {
         return await  FolderModel.findOne(condition)
     }
 
-    static findAll (condition = {}, fields = '') {
-        return FolderModel.find(condition, fields)
+    static async findAll (condition = {}, fields = '') {
+        return await FolderModel.find(condition, fields)
     }
 
-    static async search (project, search, page, fields = '') {
-        return await Folder.findAll({ project: project, name: new RegExp(search, 'i') }, 'id name endpoints')
+    static async search (project, search, fields = '') {
+        return await FolderModel.find({ project: project, name: new RegExp(search, 'i') }, 'id name endpoints')
     }
 }
