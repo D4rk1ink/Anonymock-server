@@ -2,6 +2,7 @@ import auth from './auth.route'
 import user from './user.route'
 import project from './project.route'
 import member from './member.route'
+import method from './method.route'
 import database from './database.route'
 import folder from './folder.route'
 import endpoint from './endpoint.route'
@@ -12,6 +13,7 @@ export {
     user,
     project,
     member,
+    method,
     database,
     folder,
     endpoint,

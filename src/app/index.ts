@@ -45,8 +45,10 @@ export class Server {
             routes.user,
             routes.project,
             routes.member,
+            routes.method,
             routes.database,
             routes.folder,
+            routes.endpoint,
             routes.position,
         ])
     }
