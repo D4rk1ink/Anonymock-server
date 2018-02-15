@@ -54,10 +54,16 @@ export const getById = async (req: Request, res: Response) => {
 
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
-        const { project, search, page } = req.query
-        const myFolders = await Folder.search(project, search, +page)
+        const { project, search, page, all } = req.query
+        const myFolders = await Folder.search(project, search)
         if (myFolders) {
-            const sliceFolders = myFolders.slice(+page - 1 * 10, +page * 10)
+            let sliceFolders: any[] = []
+            const itemPerPage = 10
+            if (all) {
+                sliceFolders = myFolders
+            } else {
+                sliceFolders = myFolders.slice(+page - 1 * itemPerPage, +page * itemPerPage)
+            }
             const folders = sliceFolders.map(folder => {
                 return {
                     id: folder.id,
@@ -67,7 +73,7 @@ export const search = async (req: Request, res: Response) => {
             })
             const data = {
                 folders: folders,
-                limitPage: Math.ceil(myFolders.length / 10)
+                limitPage: all ? 0 : Math.ceil(myFolders.length / itemPerPage)
             }
             res.json(preResponse.data(data))
         } else {
