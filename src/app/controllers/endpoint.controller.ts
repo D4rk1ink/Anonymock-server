@@ -21,6 +21,7 @@ export const create = async (req: Request, res: Response) => {
                 folder: myFolder.id
             })
             endpoint.method = myMethod
+            const updateFolder = await Folder.update(folder, { $push: { endpoints: endpoint.id }})
             res.json(preResponse.data(endpoint))
         } else {
             res.json(preResponse.error(null, 'Folder not found'))
