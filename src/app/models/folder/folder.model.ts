@@ -41,6 +41,6 @@ export class Folder {
     }
 
     static async search (project, search, fields = '') {
-        return await FolderModel.find({ project: project, name: new RegExp(search, 'i') }, 'id name endpoints')
+        return await FolderModel.find({ project: project, name: new RegExp(search, 'i') }, fields)
     }
 }
