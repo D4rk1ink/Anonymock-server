@@ -49,6 +49,7 @@ export class Server {
             routes.database,
             routes.folder,
             routes.endpoint,
+            routes.response,
             routes.position,
         ])
     }

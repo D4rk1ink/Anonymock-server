@@ -6,6 +6,7 @@ import method from './method.route'
 import database from './database.route'
 import folder from './folder.route'
 import endpoint from './endpoint.route'
+import response from './response.route'
 import position from './project-position.route'
 
 export {
@@ -17,5 +18,6 @@ export {
     database,
     folder,
     endpoint,
+    response,
     position
 }
