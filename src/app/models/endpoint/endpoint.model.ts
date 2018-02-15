@@ -44,7 +44,7 @@ export class Endpoint {
             .populate('method', 'id name')
     }
 
-    static async search (project, folder, search, page, fields = '') {
+    static async search (project, folder, search, fields = '') {
         let folders: any[] = [folder]
         const myProject = await Project.findById(project, 'folders')
         if (myProject) {
