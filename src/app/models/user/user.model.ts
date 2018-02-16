@@ -60,9 +60,8 @@ export class User {
         //     ]
         // }, fields)
         let members: any = []
-        const myProject = (await Project.findById(project)
+        const myProject = await Project.getModel().findById(project)
                 .populate('members.user', fields)
-                .exec())
         if (myProject) {
             members = myProject.members.filter(member => {
                 return new RegExp(search, 'gi').test(member.user.firstname + ' ' + member.user.lastname)

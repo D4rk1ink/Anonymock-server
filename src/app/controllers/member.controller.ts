@@ -20,7 +20,8 @@ export const add = async (req: Request, res: Response) => {
                     res.json(preResponse.data({
                         user: {
                             id: myUser.id,
-                            firstname: myUser.firstname
+                            firstname: myUser.firstname,
+                            email: myUser.email
                         },
                         isManager: false
                     }))
