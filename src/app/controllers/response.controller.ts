@@ -51,7 +51,10 @@ export const getById = async (req: Request, res: EResponse) => {
         const id = req.params.id
         const myResponse = await Response.findById(id)
         if (myResponse) {
-            res.json(preResponse.data(myResponse))
+            res.json(preResponse.data({
+                ...myResponse.toJSON(),
+                condition: myResponse.condition
+            }))
         } else {
             res.json(preResponse.error(null, 'Response not found'))
         }
