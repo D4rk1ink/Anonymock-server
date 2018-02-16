@@ -24,8 +24,8 @@ const ProjectSchema = new Schema({
         default: ''
     },
     environments: {
-        type: String,
-        default: '{}'
+        type: Object,
+        default: {}
     },
     folders: [
         {
