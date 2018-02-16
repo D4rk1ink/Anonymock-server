@@ -5,7 +5,6 @@ import { Project } from '../project'
 interface IResponseModel extends Document {
     id: string
     name: string
-    environment: string
     condition: {
         params: any,
         headers: any,

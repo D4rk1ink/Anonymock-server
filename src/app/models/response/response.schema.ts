@@ -7,35 +7,37 @@ const ResponseSchema = new Schema({
         type: String,
         required: true
     },
-    environment: {
-        type: String,
-        required: true
-    },
     condition: {
         params: {
             type: Object,
+            required: true,
             default: {}
         },
         headers: {
             type: Object,
+            required: true,
             default: {}
         },
         body: {
             type: Object,
+            required: true,
             default: {}
         },
         queryString: {
             type: Object,
+            required: true,
             default: {}
         }
     },
     response: {
         headers: {
             type: Object,
+            required: true,
             default: {}
         },
         body: {
             type: Object,
+            required: true,
             default: {}
         },
         delay: {
