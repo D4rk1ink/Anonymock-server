@@ -43,12 +43,10 @@ export class Response {
 
     static async findById (id, fields = '') {
         return await ResponseModel.findById(id, fields)
-            .populate('method', 'id name')
     }
 
     static async findOne (condition) {
         return await ResponseModel.findOne(condition)
-            .populate('method', 'id name')
     }
 
     static async findAll (condition = {}, fields = '') {
