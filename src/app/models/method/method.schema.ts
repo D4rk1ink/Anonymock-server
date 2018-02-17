@@ -7,10 +7,14 @@ const MethodSchema = new Schema({
         type: String,
         required: true
     },
-})
+}, {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+    }
+)
 
 MethodSchema.virtual('id').get(function () {
-    return this._id.toString()
+    return this._id.toHexString()
 })
 
 MethodSchema.plugin(timestamps)
