@@ -6,6 +6,7 @@ interface IEndpointModel extends Document {
     id: string
     name: string
     method: any
+    folder: any
     path: string
 }
 
@@ -32,16 +33,19 @@ export class Endpoint {
     static async findById (id, fields = '') {
         return await EndpointModel.findById(id, fields)
             .populate('method', 'id name')
+            .populate('folder', 'id name')
     }
 
     static async findOne (condition) {
         return await EndpointModel.findOne(condition)
             .populate('method', 'id name')
+            .populate('folder', 'id name')
     }
 
     static async findAll (condition = {}, fields = '') {
         return await EndpointModel.find(condition, fields)
             .populate('method', 'id name')
+            .populate('folder', 'id name')
     }
 
     static async search (project, folder, search, fields = '') {
@@ -61,5 +65,6 @@ export class Endpoint {
             ] }]
         }, fields)
             .populate('method', 'id name')
+            .populate('folder', 'id name')
     }
 }
