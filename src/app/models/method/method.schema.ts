@@ -9,6 +9,10 @@ const MethodSchema = new Schema({
     },
 })
 
+MethodSchema.virtual('id').get(function () {
+    return this._id.toString()
+})
+
 MethodSchema.plugin(timestamps)
 
 export default MethodSchema
