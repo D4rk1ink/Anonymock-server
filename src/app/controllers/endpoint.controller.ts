@@ -36,15 +36,9 @@ export const create = async (req: Request, res: Response) => {
 export const getById = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const id = req.params.id
-        const myEndpoint = await Endpoint.findById(id, 'id name method path')
+        const myEndpoint = await Endpoint.findById(id, 'id name method path folder')
         if (myEndpoint) {
-            const data = {
-                id: myEndpoint.id,
-                name: myEndpoint.name,
-                method: myEndpoint.method,
-                path: myEndpoint.path
-            }
-            res.json(preResponse.data(data))
+            res.json(preResponse.data(myEndpoint))
         } else {
             res.json(preResponse.error(null, 'Project not found'))
         }
