@@ -49,6 +49,35 @@ export const getById = async (req: Request, res: Response) => {
     }
 }
 
+export const update = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        const id = req.params.id
+        const { name, path, method, folder } = req.body
+        const findFolder =  await Folder.findById(folder)
+        const findMethod =  await Method.findById(method)
+        const findEndpoint = await Endpoint.findById(id)
+        if (findFolder && findMethod) {
+            if (findEndpoint) {
+                if (findFolder.id !== findEndpoint.folder) {
+                    await Folder.update(findEndpoint.folder, { $pull: { endpoints: findEndpoint.id }}) // remove endpoint from old folder
+                    await Folder.update(findFolder.id, { $push: { endpoints: findEndpoint.id }}) // add endpoint to new folder
+                }
+                await Endpoint.update(id, { name, path, method, folder })
+                const myEndpoint = await Endpoint.findById(id)
+                res.json(preResponse.data(myEndpoint))
+            } else {
+                res.json(preResponse.error(null, 'Endpoint not found'))
+            }
+        } else {
+            res.json(preResponse.error(null, 'Folder or method not found'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const search = async (req: Request, res: Response) => {
     if (verify.verifyMember(req, res)) {
         const { project, folder, search, page } = req.query
