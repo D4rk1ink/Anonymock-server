@@ -8,6 +8,7 @@ interface IEndpointModel extends Document {
     method: any
     folder: any
     path: string
+    responses: any[]
 }
 
 const EndpointModel = model<IEndpointModel>('Endpoint', EndpointSchema)

@@ -25,7 +25,13 @@ const EndpointSchema = new Schema({
         type: String,
         ref: 'Folder',
         required: true
-    }  
+    },
+    responses: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Response',
+        }
+    ],
 }, {
         toObject: { virtuals: true },
         toJSON: { virtuals: true }
