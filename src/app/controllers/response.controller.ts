@@ -3,6 +3,7 @@ import { Endpoint } from '../models/endpoint'
 import { Response } from '../models/response'
 import { Method } from '../models/method'
 import * as encrypt from '../utils/encrypt.util'
+import * as json from '../utils/json.util'
 import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: EResponse) => {
@@ -27,6 +28,7 @@ export const create = async (req: Request, res: EResponse) => {
                 },
                 endpoint: endpoint
             })
+            const updateEndpoint = await Endpoint.update(endpoint, { $push: { responses: response.id }})
             const data = {
                 id: response.id,
                 name: response.name,
@@ -46,6 +48,35 @@ export const create = async (req: Request, res: EResponse) => {
     }
 }
 
+export const update = async (req: Request, res: EResponse) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        const id = req.params.id
+        const { name, condition, response } = req.body
+        const conditionHeaders = json.isJSON(condition.headers)
+        const conditionQueryString = json.isJSON(condition.queryString)
+        const responseHeaders = json.isJSON(response.headers)
+        if (conditionHeaders && conditionQueryString && responseHeaders) {
+            await Response.update(id, { name, condition, response })
+            const myResponse = await Response.findById(id)
+            if (myResponse) {
+                res.json(preResponse.data({
+                    ...myResponse.toJSON(),
+                    condition: myResponse.condition,
+                    response: myResponse.response
+                }))
+            } else {
+                res.json(preResponse.error(null, 'Response not found'))
+            }
+        } else {
+            res.json(preResponse.error(null, 'Type not work'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const getById = async (req: Request, res: EResponse) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const id = req.params.id
@@ -53,7 +84,8 @@ export const getById = async (req: Request, res: EResponse) => {
         if (myResponse) {
             res.json(preResponse.data({
                 ...myResponse.toJSON(),
-                condition: myResponse.condition
+                condition: myResponse.condition,
+                response: myResponse.response
             }))
         } else {
             res.json(preResponse.error(null, 'Response not found'))

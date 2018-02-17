@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.post('/response', response.create)
 router.get('/response/:id', response.getById)
+router.patch('/response/:id', response.update)
 router.get('/search/response', response.search)
 
 routerIndex.use('/project', auth.verify, router)
