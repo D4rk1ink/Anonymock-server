@@ -7,9 +7,10 @@ const verifyAccessed = async (req: Request, res: Response) => {
     return my && my.isAdmin && my.id !== id
 }
 
-export const getAll = async (req: Request, res: Response) => {
+export const search = async (req: Request, res: Response) => {
     if (await verifyAccessed(req, res)) {
-        const users = await User.findAll({}, 'id firstname lastname isAdmin isApproved deactivated')
+        const { search } = req.query
+        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
         res.json(preResponse.data(users))
     } else {
         res

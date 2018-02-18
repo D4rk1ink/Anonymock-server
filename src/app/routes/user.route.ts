@@ -5,7 +5,7 @@ import * as user from '../controllers/user.controller'
 const routerIndex = express.Router()
 const router = express.Router()
 
-router.get('/', user.getAll)
+router.get('/', user.search)
 router.get('/:id', user.getById)
 router.patch('/approve', user.approve)
 router.patch('/admin', user.admin)
