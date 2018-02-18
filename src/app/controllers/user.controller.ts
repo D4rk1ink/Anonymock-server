@@ -1,14 +1,9 @@
 import { Request, Response, preResponse } from '../utils/express.util'
 import { User } from '../models/user'
-
-const verifyAccessed = async (req: Request, res: Response) => {
-    const { id } = req.body
-    const my = await User.findById(req.certificate.id)
-    return my && my.isAdmin && my.id !== id
-}
+import * as verify from './verify.controller'
 
 export const search = async (req: Request, res: Response) => {
-    if (await verifyAccessed(req, res)) {
+    if (await verify.verifyAdmin(req, res)) {
         const { search } = req.query
         const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
         res.json(preResponse.data(users))
@@ -20,10 +15,10 @@ export const search = async (req: Request, res: Response) => {
 }
 
 export const getById = async (req: Request, res: Response) => {
-    if (await verifyAccessed(req, res)) {
+    const id = req.params.id
+    if (await verify.verifyMyself(id, req)) {
         try {
-            const { id } = req.params
-            const user = await User.findById(id, 'id firstname lastname isAdmin isApproved deactivated')
+            const user = await User.findById(id, 'id firstname lastname isAdmin')
             res.json(preResponse.data(user))
         } catch (err) {
             res.json(preResponse.error(null, err.message))
@@ -36,9 +31,10 @@ export const getById = async (req: Request, res: Response) => {
 }
 
 export const approve = async (req: Request, res: Response) => {
-    if (await verifyAccessed(req, res)) {
+    const id = req.params.id
+    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
         try {
-            const { id, approve } = req.body
+            const { approve } = req.body
             const user = await User.findById(id)
             if (approve && user && !user.isApproved) {
                 const user = await User.update(id, { isApproved: approve })
@@ -63,9 +59,10 @@ export const approve = async (req: Request, res: Response) => {
 }
 
 export const admin = async (req: Request, res: Response) => {
-    if (await verifyAccessed(req, res)) {
+    const id = req.params.id
+    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
         try {
-            const { id, isAdmin } = req.body
+            const { isAdmin } = req.body
             const user = await User.update(id, { isAdmin: isAdmin })
             res.json(preResponse.data('Successfully'))
         } catch (err) {
@@ -79,9 +76,10 @@ export const admin = async (req: Request, res: Response) => {
 }
 
 export const deactivate = async (req: Request, res: Response) => {
-    if (await verifyAccessed(req, res)) {
+    const id = req.params.id
+    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
         try {
-            const { id, deactivated } = req.body
+            const { deactivated } = req.body
             const user = await User.update(id, { deactivated: deactivated })
             res.json(preResponse.data('Successfully'))
         } catch (err) {

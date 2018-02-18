@@ -7,9 +7,9 @@ const router = express.Router()
 
 router.get('/', user.search)
 router.get('/:id', user.getById)
-router.patch('/approve', user.approve)
-router.patch('/admin', user.admin)
-router.patch('/deactivate', user.deactivate)
+router.patch('/:id/approve', user.approve)
+router.patch('/:id/admin', user.admin)
+router.patch('/:id/deactivate', user.deactivate)
 routerIndex.use('/user', auth.verify, router)
 
 export default routerIndex
