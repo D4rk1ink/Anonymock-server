@@ -18,7 +18,7 @@ export const getById = async (req: Request, res: Response) => {
     const id = req.params.id
     if (await verify.verifyMyself(id, req)) {
         try {
-            const user = await User.findById(id, 'id firstname lastname isAdmin')
+            const user = await User.findById(id, 'id firstname lastname email isAdmin')
             res.json(preResponse.data(user))
         } catch (err) {
             res.json(preResponse.error(null, err.message))
