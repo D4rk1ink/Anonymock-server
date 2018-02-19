@@ -5,7 +5,7 @@ import * as verify from './verify.controller'
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res)) {
         const { search } = req.query
-        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
+        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin picture isApproved deactivated')
         res.json(preResponse.data(users))
     } else {
         res
@@ -18,7 +18,25 @@ export const getById = async (req: Request, res: Response) => {
     const id = req.params.id
     if (await verify.verifyMyself(id, req)) {
         try {
-            const user = await User.findById(id, 'id firstname lastname email isAdmin')
+            const user = await User.findById(id, 'id firstname lastname email picture isAdmin')
+            res.json(preResponse.data(user))
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const update = async (req: Request, res: Response) => {
+    const id = req.params.id
+    if (await verify.verifyMyself(id, req)) {
+        try {
+            const { firstname, lastname, email } = req.body
+            await User.update(id, { firstname, lastname, email })
+            const user = await User.findById(id, 'id firstname lastname email picture isAdmin')
             res.json(preResponse.data(user))
         } catch (err) {
             res.json(preResponse.error(null, err.message))
