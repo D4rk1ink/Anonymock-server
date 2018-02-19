@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.get('/', project.getAll)
 router.get('/:id', project.getById)
+router.patch('/:id', project.update)
 router.post('/', project.create)
 
 routerIndex.use('/project', auth.verify, router)

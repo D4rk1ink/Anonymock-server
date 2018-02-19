@@ -37,8 +37,8 @@ export class Project {
         return await ProjectModel.findById(id, fields)
     }
 
-    static async findOne (condition) {
-        return await  ProjectModel.findOne(condition)
+    static async findOne (condition, fields = '') {
+        return await  ProjectModel.findOne(condition, fields)
     }
 
     static async findAll (condition = {}, fields = '') {
