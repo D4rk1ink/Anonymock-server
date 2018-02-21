@@ -1,5 +1,8 @@
 import { Request, Response, preResponse } from '../utils/express.util'
 import { Project } from '../models/project'
+import { Folder } from '../models/folder'
+import { Endpoint } from '../models/endpoint'
+import { Response as ResponseModel } from '../models/response'
 import { User } from '../models/user'
 import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
@@ -64,6 +67,30 @@ export const update = async (req: Request, res: Response) => {
             await Project.update(id, { name, status, descripition, repository, environments })
             const project = await Project.findById(id, 'id name status description repository environments')
             res.json(preResponse.data(project))
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const deleteProject = async (req: Request, res: Response) => {
+    const id = req.headers.projectid
+    if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
+        try {
+            const findProject = await Project.findById(id)
+            if (findProject) {
+                const endpointIds = (await Endpoint.findAll({ folder: { $in: findProject.folders }})).map(endpoint => endpoint.id)
+                await Folder.getModel().deleteMany({ id: { $in: findProject.folders }})
+                await Endpoint.getModel().deleteMany({ folder: { $in: findProject.folders }})
+                await ResponseModel.getModel().deleteMany({ foendpointlder: { $in: endpointIds }})
+                await User.getModel().updateMany({ projects: findProject.id }, { $pull: { projects: findProject.id }})
+                await Project.remove(id)
+                res.json(preResponse.data('Successfully'))
+            }
         } catch (err) {
             res.json(preResponse.error(null, err.message))
         }
