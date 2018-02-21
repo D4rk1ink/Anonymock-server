@@ -7,23 +7,28 @@ import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
-        const { project, name } = req.body
-        const myProject = await Project.findById(project)
-        if (myProject) {
-            const folderId = encrypt.virtualId(4)
-            const folder = await Folder.create({
-                _id: folderId,
-                name: name,
-                project: myProject.id
-            })
-            const data = {
-                id: folder.id,
-                name: folder.name,
-                countEndpoints: 0
+        try {
+            const { project, name } = req.body
+            const myProject = await Project.findById(project)
+            if (myProject) {
+                const folderId = encrypt.virtualId(4)
+                const folder = await Folder.create({
+                    _id: folderId,
+                    name: name,
+                    project: myProject.id
+                })
+                const myFolder = await Project.update(myProject.id, { $push: { folders: folder.id }})
+                const data = {
+                    id: folder.id,
+                    name: folder.name,
+                    countEndpoints: 0
+                }
+                res.json(preResponse.data(data))
+            } else {
+                res.json(preResponse.error(null, 'Project not found'))
             }
-            res.json(preResponse.data(data))
-        } else {
-            res.json(preResponse.error(null, 'Project not found'))
+        } catch (err) {
+            res.json(preResponse.error(null, 'create fail'))
         }
     } else {
         res
