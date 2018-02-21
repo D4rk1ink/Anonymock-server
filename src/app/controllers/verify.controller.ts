@@ -14,7 +14,7 @@ export const verifyAdmin = async (req: Request, res: Response) => {
 
 export const verifyManager = async (req: Request, res: Response) => {
     const { projectid } = req.headers
-    const project = await Project.findOne({ id: projectid, 'members.user': req.certificate.id }, 'members')
+    const project = await Project.findOne({ _id: projectid, 'members.user': req.certificate.id }, 'members')
     let isManager = false
     if (project) {
         const member = project.members.find(member => member.user === req.certificate.id)
@@ -25,7 +25,7 @@ export const verifyManager = async (req: Request, res: Response) => {
 
 export const verifyMember = async (req: Request, res: Response) => {
     const { projectid } = req.headers
-    const project = await Project.findOne({ id: projectid, 'members.user': req.certificate.id }, 'members')
+    const project = await Project.findOne({ _id: projectid, 'members.user': req.certificate.id }, 'members')
     let isMember = false
     if (project) {
         isMember = true
