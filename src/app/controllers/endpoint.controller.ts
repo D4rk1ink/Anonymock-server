@@ -81,7 +81,7 @@ export const update = async (req: Request, res: Response) => {
 export const search = async (req: Request, res: Response) => {
     if (verify.verifyMember(req, res)) {
         const { project, folder, search, page } = req.query
-        const myEndpoints = await Endpoint.search(null, folder, search, 'id method name path')
+        const myEndpoints = await Endpoint.search(project, folder, search, 'id method name path')
         const data = {
             endpoints: myEndpoints.slice((page - 1) * 10, page * 10),
             limitPage: Math.ceil(myEndpoints.length / 10)
