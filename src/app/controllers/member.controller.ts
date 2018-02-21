@@ -40,9 +40,9 @@ export const add = async (req: Request, res: Response) => {
 }
 
 export const exit = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
+    const { project, user } = req.body
+    if (!await verify.verifyMyself(user, req) && await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
         try {
-            const { project, user } = req.body
             const findProject = await Project.findById(project)
             const findUser = await User.findById(user)
             if (findProject && findUser) {
@@ -63,9 +63,9 @@ export const exit = async (req: Request, res: Response) => {
 }
 
 export const manager = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
+    const { project, user, isManager } = req.body
+    if (!await verify.verifyMyself(user, req) && await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
         try {
-            const { project, user, isManager } = req.body
             const findProject = await Project.findById(project)
             const findUser = await User.findById(user)
             if (findProject && findUser) {
