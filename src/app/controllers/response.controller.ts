@@ -59,11 +59,7 @@ export const update = async (req: Request, res: EResponse) => {
             await Response.update(id, { name, condition, response })
             const myResponse = await Response.findById(id)
             if (myResponse) {
-                res.json(preResponse.data({
-                    ...myResponse.toJSON(),
-                    condition: myResponse.condition,
-                    response: myResponse.response
-                }))
+                res.json(preResponse.data(myResponse))
             } else {
                 res.json(preResponse.error(null, 'Response not found'))
             }
@@ -82,11 +78,7 @@ export const getById = async (req: Request, res: EResponse) => {
         const id = req.params.id
         const myResponse = await Response.findById(id)
         if (myResponse) {
-            res.json(preResponse.data({
-                ...myResponse.toJSON(),
-                condition: myResponse.condition,
-                response: myResponse.response
-            }))
+            res.json(preResponse.data(myResponse))
         } else {
             res.json(preResponse.error(null, 'Response not found'))
         }
@@ -98,7 +90,7 @@ export const getById = async (req: Request, res: EResponse) => {
 }
 
 export const search = async (req: Request, res: EResponse) => {
-    if (verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const { endpoint, search, environment } = req.query
         const myResponses = await Response.search(endpoint, search, environment, 'id name response')
         const data = myResponses.map(response => {

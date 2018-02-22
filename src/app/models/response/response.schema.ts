@@ -7,6 +7,10 @@ const ResponseSchema = new Schema({
         type: String,
         required: true
     },
+    environment: {
+        type: String,
+        required: true
+    },
     condition: {
         params: {
             type: Object,
@@ -56,7 +60,8 @@ const ResponseSchema = new Schema({
     }  
 }, {
         toObject: { virtuals: true },
-        toJSON: { virtuals: true }
+        toJSON: { virtuals: true },
+        minimize: false
     }
 )
 
