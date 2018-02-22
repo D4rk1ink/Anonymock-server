@@ -51,6 +51,7 @@ export class Server {
             routes.endpoint,
             routes.response,
             routes.position,
+            routes.api,
         ])
     }
 

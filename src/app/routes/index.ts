@@ -8,6 +8,7 @@ import folder from './folder.route'
 import endpoint from './endpoint.route'
 import response from './response.route'
 import position from './project-position.route'
+import api from './request-api.route'
 
 export {
     auth,
@@ -19,5 +20,6 @@ export {
     folder,
     endpoint,
     response,
-    position
+    position,
+    api
 }
