@@ -84,9 +84,9 @@ export const deleteProject = async (req: Request, res: Response) => {
             const findProject = await Project.findById(id)
             if (findProject) {
                 const endpointIds = (await Endpoint.findAll({ folder: { $in: findProject.folders }})).map(endpoint => endpoint.id)
-                await Folder.getModel().deleteMany({ id: { $in: findProject.folders }})
+                await Folder.getModel().deleteMany({ _id: { $in: findProject.folders }})
                 await Endpoint.getModel().deleteMany({ folder: { $in: findProject.folders }})
-                await ResponseModel.getModel().deleteMany({ foendpointlder: { $in: endpointIds }})
+                await ResponseModel.getModel().deleteMany({ endpoint: { $in: endpointIds }})
                 await User.getModel().updateMany({ projects: findProject.id }, { $pull: { projects: findProject.id }})
                 await Project.remove(id)
                 res.json(preResponse.data('Successfully'))
