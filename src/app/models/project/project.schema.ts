@@ -29,7 +29,7 @@ const ProjectSchema = new Schema({
     },
     folders: [
         {
-            type: Object,
+            type: String,
             ref: 'Folder'
         }
     ],
