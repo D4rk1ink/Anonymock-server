@@ -175,6 +175,9 @@ const filterDababase = (conditions, db) => {
             for (const key of keys) {
                 nested = nested[key]
             }
+            if (typeof nested === 'boolean') {
+                condition.value = JSON.parse(condition.value) // ?
+            }
             if (nested != condition.value) {
                 isCorrect = false
                 break
