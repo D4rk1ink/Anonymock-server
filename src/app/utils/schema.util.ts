@@ -26,8 +26,8 @@ export const verify = (data: any, schema: any) => {
                 }
                 break
             case 'Boolean':
-                if (typeof data[key] === 'boolean') {
-                    throw new Error(key + ' not number')
+                if (typeof data[key] !== 'boolean') {
+                    throw new Error(key + ' not boolean')
                 }
                 break
             case 'Array':
@@ -96,8 +96,8 @@ export const verifyGenerate = (data: any, schema: any) => {
                 }
                 break
             case 'Boolean':
-                if (typeof data[key] === 'boolean' && typeof data[key] !== 'string') {
-                    throw new Error(key + ' not number')
+                if (typeof data[key] !== 'boolean' && typeof data[key] !== 'string') {
+                    throw new Error(key + ' not boolean')
                 }
                 break
             case 'Array':
