@@ -83,30 +83,26 @@ export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { project, search, page, all } = req.query
-            const myFolders = await Folder.search(project, search)
-            if (myFolders) {
-                let sliceFolders: any[] = []
-                const itemPerPage = 10
-                if (all) {
-                    sliceFolders = myFolders
-                } else {
-                    sliceFolders = myFolders.slice((page - 1 * itemPerPage), page * itemPerPage)
-                }
-                const folders = sliceFolders.map(folder => {
-                    return {
-                        id: folder.id,
-                        name: folder.name,
-                        countEndpoints: folder.endpoints.length
-                    }
-                })
-                const data = {
-                    folders: folders,
-                    limitPage: all ? 0 : Math.ceil(myFolders.length / itemPerPage)
-                }
-                res.json(preResponse.data(data))
+            let folders: any[] = []
+            let foldersCount = 0
+            if (all) {
+                folders = await Folder.findAll({ project: project })
             } else {
-                res.json(preResponse.error(null, 'Folder not found'))
+                foldersCount = await Folder.getModel().find({ project: project }).count()
+                folders = await Folder.search(project, search, page)
             }
+            folders = folders.map(folder => {
+                return {
+                    id: folder.id,
+                    name: folder.name,
+                    countEndpoints: folder.endpoints.length
+                }
+            })
+            const data = {
+                folders: folders,
+                limitPage: all ? 1 : Math.ceil(foldersCount / 10)
+            }
+            res.json(preResponse.data(data))
         } catch (err) {
             res.json(preResponse.error(null, 'Search fail'))
         }
