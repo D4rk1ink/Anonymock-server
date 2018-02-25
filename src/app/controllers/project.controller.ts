@@ -25,9 +25,14 @@ export const getAll = async (req: Request, res: Response) => {
 export const getById = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
-            const { id } = req.params
+            const id = req.headers.projectid
             const project = await Project.findById(id, 'id name status description repository environments')
-            res.json(preResponse.data(project))
+            let data: any = {}
+            if (project) {
+                data = {...project.toJSON()}
+                data.isManager = await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)
+            }
+            res.json(preResponse.data(data))
         } catch (err) {
             res.json(preResponse.error(null, err.message))
         }
