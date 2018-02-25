@@ -72,7 +72,8 @@ export const request = async (req: Request, res: Response) => {
                         // Create log
                         const log = {
                             _id: encrypt.virtualId(7),
-                            path: path,
+                            path: `/${path}`,
+                            method: myMethod.id,
                             request: {
                                 client: {},
                                 headers: req.headers,

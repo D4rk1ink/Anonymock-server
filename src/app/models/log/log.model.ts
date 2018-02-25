@@ -4,6 +4,7 @@ import LogSchema from './log.schema'
 interface ILogModel extends Document {
     id: string
     path: string
+    method: any
     request: {
         client: any,
         headers: any,
@@ -17,7 +18,7 @@ interface ILogModel extends Document {
         statusCode: number
     }
     project: string
-    createAt: string
+    createdAt: string
 }
 
 const LogModel = model<ILogModel>('Log', LogSchema)
@@ -50,6 +51,7 @@ export class Log {
 
     static async search (project, search, page, fields = '') {
         return await LogModel.find({ project: project, path: new RegExp(search, 'i') }, fields)
+            .populate('method')
             .skip((page - 1) * 20)
             .limit(20)
     }

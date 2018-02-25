@@ -11,7 +11,7 @@ export const search = async (req: Request, res: Response) => {
             logs: logs,
             limitPage: Math.ceil(logsCount / 20)
         }
-        res.json(data)
+        res.json(preResponse.data(data))
     } else {
         res
             .status(401)

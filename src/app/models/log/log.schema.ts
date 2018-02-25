@@ -10,6 +10,11 @@ const LogSchema = new Schema({
         type: String,
         required: true
     },
+    method: {
+        type: Schema.Types.ObjectId,
+        ref: 'Method',
+        required: true
+    },
     request: {
         client: {
             type: Object,
