@@ -49,17 +49,10 @@ export class Endpoint {
             .populate('folder', 'id name')
     }
 
-    static async search (project, folder, search, fields = '') {
-        let folders: any[] = [folder]
-        const myProject = await Project.findById(project, 'folders')
-        if (myProject) {
-            folders = myProject.folders
-        }
+    static async search (folders, search, page, fields = '') {
         return await EndpointModel.find({
             $and: [{
-                $or: [
-                    { folder: folder },
-                    { folder: { $in: folders } }]
+                folder: { $in: folders }
             }, { $or: [
                 { name: new RegExp(search, 'gi') },
                 { path: new RegExp(search, 'gi') }
@@ -67,5 +60,7 @@ export class Endpoint {
         }, fields)
             .populate('method', 'id name')
             .populate('folder', 'id name')
+            .skip((page - 1) * 10)
+            .limit(10)
     }
 }

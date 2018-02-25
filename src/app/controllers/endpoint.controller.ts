@@ -7,7 +7,7 @@ import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const { folder } = req.body
         const myFolder = await Folder.findById(folder)
         const myMethod = await Method.findOne({ name: 'GET' }, 'id name')
@@ -34,7 +34,7 @@ export const create = async (req: Request, res: Response) => {
 }
 
 export const getById = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const id = req.params.id
         const myEndpoint = await Endpoint.findById(id, 'id name method path folder')
         if (myEndpoint) {
@@ -50,7 +50,7 @@ export const getById = async (req: Request, res: Response) => {
 }
 
 export const update = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const id = req.params.id
         const { name, path, method, folder } = req.body
         const findFolder =  await Folder.findById(folder)
@@ -79,12 +79,18 @@ export const update = async (req: Request, res: Response) => {
 }
 
 export const search = async (req: Request, res: Response) => {
-    if (verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const { project, folder, search, page } = req.query
-        const myEndpoints = await Endpoint.search(project, folder, search, 'id method name path')
+        let folders: any[] = [folder]
+        const myProject = await Project.findById(project, 'folders')
+        if (myProject) {
+            folders = myProject.folders
+        }
+        const endpointsCount = await Endpoint.getModel().find({ folder: { $in: folders }}).count()
+        const endpoints = await Endpoint.search(folders, search, page, 'id method name path')
         const data = {
-            endpoints: myEndpoints.slice((page - 1) * 10, page * 10),
-            limitPage: Math.ceil(myEndpoints.length / 10)
+            endpoints: endpoints,
+            limitPage: Math.ceil(endpointsCount / 10)
         }
         res.json(preResponse.data(data))
     } else {
