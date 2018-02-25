@@ -6,7 +6,7 @@ import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { project, name } = req.body
             const myProject = await Project.findById(project)
@@ -37,8 +37,26 @@ export const create = async (req: Request, res: Response) => {
     }
 }
 
+export const update = async (req: Request, res: Response) => {
+    if (await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const { name } = req.body
+            await Folder.update(id, { name: name })
+            const myFolder = await Folder.findById(id, 'id name')
+            res.json(preResponse.data(myFolder))
+        } catch (err) {
+            res.json(preResponse.error(null, 'update fail'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const getById = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const id = req.params.id
             const myFolder = await Folder.findById(id, 'id name')
@@ -62,7 +80,7 @@ export const getById = async (req: Request, res: Response) => {
 }
 
 export const search = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { project, search, page, all } = req.query
             const myFolders = await Folder.search(project, search)
