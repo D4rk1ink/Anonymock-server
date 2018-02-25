@@ -3,7 +3,9 @@ import { Project } from '../models/project'
 import { Endpoint } from '../models/endpoint'
 import { Response as ResponseModel } from '../models/response'
 import { Method } from '../models/method'
+import { Log } from '../models/log'
 import * as json from '../utils/json.util'
+import * as encrypt from '../utils/encrypt.util'
 
 export const request = async (req: Request, res: Response) => {
     const { id, environment, path } = req.params
@@ -65,7 +67,27 @@ export const request = async (req: Request, res: Response) => {
                     ]
                     const dbSelected = filterDababase(dbTokens, myProject.database.data)
                     const responseBody = dbSelected.map(db => mapDatabase(response.response.body, db))
-                    setTimeout(() => {
+                    
+                    setTimeout(async () => {
+                        // Create log
+                        const log = {
+                            _id: encrypt.virtualId(7),
+                            path: path,
+                            request: {
+                                client: {},
+                                headers: req.headers,
+                                body: req.body,
+                                queryString: req.query
+                            },
+                            response: {
+                                headers: response.response.headers,
+                                body: responseBody,
+                                delay: response.response.delay,
+                                statusCode: response.response.statusCode
+                            },
+                            project: myProject.id
+                        }
+                        await Log.create(log)
                         res
                             .status(response.response.statusCode)
                             .header(response.response.headers)

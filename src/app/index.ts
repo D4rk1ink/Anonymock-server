@@ -50,6 +50,7 @@ export class Server {
             routes.folder,
             routes.endpoint,
             routes.response,
+            routes.log,
             routes.position,
             routes.api,
         ])

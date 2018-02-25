@@ -7,6 +7,7 @@ import database from './database.route'
 import folder from './folder.route'
 import endpoint from './endpoint.route'
 import response from './response.route'
+import log from './log.route'
 import position from './project-position.route'
 import api from './request-api.route'
 
@@ -20,6 +21,7 @@ export {
     folder,
     endpoint,
     response,
+    log,
     position,
     api
 }

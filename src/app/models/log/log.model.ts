@@ -4,8 +4,18 @@ import LogSchema from './log.schema'
 interface ILogModel extends Document {
     id: string
     path: string
-    request: string
-    response: any[]
+    request: {
+        client: any,
+        headers: any,
+        body: any,
+        queryString: any
+    }
+    response: {
+        headers: any,
+        body: any,
+        delay: number,
+        statusCode: number
+    }
     project: string
     createAt: string
 }
@@ -38,7 +48,9 @@ export class Log {
         return await LogModel.find(condition, fields)
     }
 
-    static async search (project, search, fields = '') {
+    static async search (project, search, page, fields = '') {
         return await LogModel.find({ project: project, path: new RegExp(search, 'i') }, fields)
+            .skip((page - 1) * 20)
+            .limit(20)
     }
 }
