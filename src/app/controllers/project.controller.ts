@@ -2,6 +2,7 @@ import { Request, Response, preResponse } from '../utils/express.util'
 import { Project } from '../models/project'
 import { Folder } from '../models/folder'
 import { Endpoint } from '../models/endpoint'
+import { Log } from '../models/log'
 import { Response as ResponseModel } from '../models/response'
 import { User } from '../models/user'
 import * as encrypt from '../utils/encrypt.util'
@@ -84,9 +85,10 @@ export const deleteProject = async (req: Request, res: Response) => {
             const findProject = await Project.findById(id)
             if (findProject) {
                 const endpointIds = (await Endpoint.findAll({ folder: { $in: findProject.folders }})).map(endpoint => endpoint.id)
-                await Folder.getModel().deleteMany({ _id: { $in: findProject.folders }})
-                await Endpoint.getModel().deleteMany({ folder: { $in: findProject.folders }})
-                await ResponseModel.getModel().deleteMany({ endpoint: { $in: endpointIds }})
+                await Log.getModel().deleteMany({ project: findProject.id })
+                await Folder.getModel().deleteMany({ project: findProject.id })
+                await Endpoint.getModel().deleteMany({ folder: { $in: findProject.folders } })
+                await ResponseModel.getModel().deleteMany({ endpoint: { $in: endpointIds } })
                 await User.getModel().updateMany({ projects: findProject.id }, { $pull: { projects: findProject.id }})
                 await Project.remove(id)
                 res.json(preResponse.data('Successfully'))
