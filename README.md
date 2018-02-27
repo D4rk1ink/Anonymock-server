@@ -2,28 +2,38 @@
 
 This README would normally document whatever steps are necessary to get your application up and running.
 
-### What is this repository for? ###
+### Clone this project ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+```
+> git clone https://darklink-v2@bitbucket.org/project-2-psu/mock-api-server.git
+```
 
-### How do I get set up? ###
+### Install typescript to global ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+```
+> npm install -g typescript
+```
 
-### Contribution guidelines ###
+### Install ts-node to global ###
 
-* Writing tests
-* Code review
-* Other guidelines
+```
+> npm install -g ts-node
+```
 
-### Who do I talk to? ###
+### Install local packages ###
 
-* Repo owner or admin
-* Other community or team contact
+```
+> npm install
+```
+
+### Run mongo service ###
+
+```
+> mongod
+```
+
+### Run project ###
+
+```
+> npm run dev
+```
