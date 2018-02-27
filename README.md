@@ -8,6 +8,12 @@ This README would normally document whatever steps are necessary to get your app
 > git clone https://darklink-v2@bitbucket.org/project-2-psu/mock-api-server.git
 ```
 
+### Switch to develop branch ###
+
+```
+> git checkout develop
+```
+
 ### Install typescript to global ###
 
 ```
