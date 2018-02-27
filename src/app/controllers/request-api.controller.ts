@@ -55,7 +55,6 @@ export const request = async (req: Request, res: Response) => {
                 if (method !== 'GET') {
                     extractBodyDbToken = extractDbToken(req.body, response.condition.body)
                 }
-                console.log(extractParamsDbToken, extractHeadersDbToken, extractQueryStringDbToken, extractBodyDbToken)
                 if (extractParamsDbToken && extractHeadersDbToken && extractQueryStringDbToken && extractBodyDbToken) {
                     const dbTokens = [
                         ...extractParamsDbToken,
@@ -76,7 +75,7 @@ export const request = async (req: Request, res: Response) => {
                 }
             }
             if (!hasCorrect) {
-                res.status(404).json({a:'asd'})
+                res.status(404).json({e:'Api not fount'})
             }
         } else {
             res.status(404).json({e:'Endpoint not found'})
@@ -168,7 +167,7 @@ const extractDbToken = (data, correctData) => {
 const filterDababase = (conditions, db) => {
     let selected: any[] = []
     for (const data of db) {
-        let isCorrect = true
+        let isCorrect = false
         for (const condition of conditions) {
             const keys = condition.key.split('.')
             let nested = data
@@ -178,7 +177,9 @@ const filterDababase = (conditions, db) => {
             if (typeof nested === 'boolean') {
                 condition.value = JSON.parse(condition.value) // ?
             }
-            if (nested != condition.value) {
+            if (nested == condition.value) {
+                isCorrect = true
+            } else {
                 isCorrect = false
                 break
             }
