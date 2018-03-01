@@ -40,9 +40,7 @@ export class Folder {
         return await FolderModel.find(condition, fields)
     }
 
-    static async search (project, search, page, fields = '') {
-        return await FolderModel.find({ project: project, name: new RegExp(search, 'i') }, fields)
-            .skip((page - 1) * 10)
-            .limit(10)
+    static search (project, search, page, fields = '') {
+        return FolderModel.find({ project: project, name: new RegExp(search, 'i') }, fields)
     }
 }

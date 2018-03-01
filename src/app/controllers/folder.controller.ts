@@ -88,8 +88,10 @@ export const search = async (req: Request, res: Response) => {
             if (all) {
                 folders = await Folder.findAll({ project: project })
             } else {
-                foldersCount = await Folder.getModel().find({ project: project }).count()
+                foldersCount = await Folder.search(project, search, page).count()
                 folders = await Folder.search(project, search, page)
+                    .skip((page - 1) * 10)
+                    .limit(10)
             }
             folders = folders.map(folder => {
                 return {
