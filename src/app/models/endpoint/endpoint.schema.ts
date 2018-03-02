@@ -32,6 +32,16 @@ const EndpointSchema = new Schema({
             ref: 'Response',
         }
     ],
+    defaultResponse: {
+        dev: {
+            type: Schema.Types.ObjectId,
+            ref: 'Response',
+        },
+        test: {
+            type: Schema.Types.ObjectId,
+            ref: 'Response',
+        }
+    }
 }, {
         toObject: { virtuals: true },
         toJSON: { virtuals: true }
