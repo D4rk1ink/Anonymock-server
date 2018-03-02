@@ -5,7 +5,7 @@ import * as verify from './verify.controller'
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res)) {
         const { search } = req.query
-        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin picture isApproved deactivated')
+        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
         res.json(preResponse.data(users))
     } else {
         res
@@ -18,8 +18,47 @@ export const getById = async (req: Request, res: Response) => {
     const id = req.params.id
     if (await verify.verifyMyself(id, req)) {
         try {
-            const user = await User.findById(id, 'id firstname lastname email picture isAdmin')
+            const user = await User.findById(id, 'id firstname lastname email isAdmin')
             res.json(preResponse.data(user))
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const picture = async (req: Request, res: Response) => {
+    const id = req.params.id
+    try {
+        const user = await User.findById(id, 'picture')
+        if (user) {
+            const base64 = user.picture.split(",")
+            if (base64.length > 1) {
+                const img = new Buffer(base64[1], 'base64');
+                res
+                    .writeHead(200, {
+                        'Content-Type': 'image/png',
+                        'Content-Length': img.length
+                    })
+                res.end(img)
+            }
+            
+        }
+    } catch (err) {
+        res.json(preResponse.error(null, err.message))
+    }
+}
+
+export const uploadPicture = async (req: Request, res: Response) => {
+    const id = req.params.id
+    if (await verify.verifyMyself(id, req)) {
+        try {
+            const { picture } = req.body
+            await User.update(id, { picture })
+            res.json(preResponse.data('Successfully'))
         } catch (err) {
             res.json(preResponse.error(null, err.message))
         }
@@ -36,7 +75,7 @@ export const update = async (req: Request, res: Response) => {
         try {
             const { firstname, lastname, email } = req.body
             await User.update(id, { firstname, lastname, email })
-            const user = await User.findById(id, 'id firstname lastname email picture isAdmin')
+            const user = await User.findById(id, 'id firstname lastname email isAdmin')
             res.json(preResponse.data(user))
         } catch (err) {
             res.json(preResponse.error(null, err.message))

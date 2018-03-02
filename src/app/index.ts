@@ -21,8 +21,8 @@ export class Server {
 
     public config () {
         this.app.use(cors())
-        this.app.use(bodyParser.json())
-        this.app.use(bodyParser.urlencoded({ extended: true }))
+        this.app.use(bodyParser.json({ limit: '2mb' }))
+        this.app.use(bodyParser.urlencoded({ limit: '2mb', extended: true }))
         this.app.use(express.static(path.join(__dirname, 'dist')))
     }
 

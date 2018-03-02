@@ -19,8 +19,7 @@ export const signin = async (req: Request, res: Response) => {
                 id: user.id,
                 firstname: user.firstname,
                 lastname: user.lastname,
-                email: user.email,
-                picture: user.picture
+                email: user.email
             }
         }
         res.json(preResponse.data(data))
@@ -48,9 +47,10 @@ export const signup = async (req: Request, res: Response) => {
 }
 
 export const verify =  async (req: Request, res: Response, next: NextFunction) => {
-    if (req.headers.authorization) {
+    if (req.headers.authorization || req.query.authorization) {
         try {
-            const cert = await certificate.verify(req.headers.authorization)
+            const token = req.headers.authorization || req.query.authorization
+            const cert = await certificate.verify(token)
             req.certificate = cert
             next()
         } catch (err) {
