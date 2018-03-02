@@ -49,8 +49,8 @@ export class Endpoint {
             .populate('folder', 'id name')
     }
 
-    static async search (folders, search, page, fields = '') {
-        return await EndpointModel.find({
+    static search (folders, search, page, fields = '') {
+        return EndpointModel.find({
             $and: [{
                 folder: { $in: folders }
             }, { $or: [
@@ -60,7 +60,5 @@ export class Endpoint {
         }, fields)
             .populate('method', 'id name')
             .populate('folder', 'id name')
-            .skip((page - 1) * 10)
-            .limit(10)
     }
 }
