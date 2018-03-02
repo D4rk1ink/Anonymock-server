@@ -18,7 +18,11 @@ export const create = async (req: Request, res: Response) => {
                 name: 'New Endpoint',
                 method: myMethod.id,
                 path: `/new-endpoint-${endpointId}`,
-                folder: myFolder.id
+                folder: myFolder.id,
+                defaultResponse: {
+                    dev: null,
+                    test: null
+                }
             })
             endpoint.method = myMethod
             const updateFolder = await Folder.update(folder, { $push: { endpoints: endpoint.id }})
