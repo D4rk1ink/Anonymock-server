@@ -8,27 +8,27 @@ import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
-        const { folder } = req.body
-        const myFolder = await Folder.findById(folder)
-        const myMethod = await Method.findOne({ name: 'GET' }, 'id name')
-        if (myFolder && myMethod) {
-            const endpointId = encrypt.virtualId(4)
-            const endpoint = await Endpoint.create({
-                _id: endpointId,
-                name: 'New Endpoint',
-                method: myMethod.id,
-                path: `/new-endpoint-${endpointId}`,
-                folder: myFolder.id,
-                defaultResponse: {
-                    dev: null,
-                    test: null
-                }
-            })
-            endpoint.method = myMethod
-            const updateFolder = await Folder.update(folder, { $push: { endpoints: endpoint.id }})
-            res.json(preResponse.data(endpoint))
-        } else {
-            res.json(preResponse.error(null, 'Folder not found'))
+        try {
+            const { folder } = req.body
+            const myFolder = await Folder.findById(folder)
+            const myMethod = await Method.findOne({ name: 'GET' }, 'id name')
+            if (myFolder && myMethod) {
+                const endpointId = encrypt.virtualId(4)
+                const endpoint = await Endpoint.create({
+                    _id: endpointId,
+                    name: 'New Endpoint',
+                    method: myMethod.id,
+                    path: `/new-endpoint-${endpointId}`,
+                    folder: myFolder.id
+                })
+                endpoint.method = myMethod
+                const updateFolder = await Folder.update(folder, { $push: { endpoints: endpoint.id }})
+                res.json(preResponse.data(endpoint))
+            } else {
+                res.json(preResponse.error(null, 'Folder not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, 'Create fail'))
         }
     } else {
         res
