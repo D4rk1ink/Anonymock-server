@@ -35,7 +35,7 @@ export const request = async (req: Request, res: Response) => {
                     params[key] = values[i]
                 })
             }
-            let hasCorrect = false
+            let dataResponse: any = null
             for (const response of myEndpoint.responses) {
                 response.condition.params = mapEnvironment(response.condition.params, myProject.environments)
                 response.condition.body = mapEnvironment(response.condition.body, myProject.environments)
@@ -52,7 +52,7 @@ export const request = async (req: Request, res: Response) => {
                 const extractParamsDbToken = extractDbToken(params, response.condition.params)
                 const extractHeadersDbToken = extractDbToken(req.headers, response.condition.headers)
                 const extractQueryStringDbToken = extractDbToken(req.query, response.condition.queryString)
-       
+
                 let extractBodyDbToken = []
                 if (method !== 'GET') {
                     extractBodyDbToken = extractDbToken(req.body, response.condition.body)
@@ -64,40 +64,55 @@ export const request = async (req: Request, res: Response) => {
                         ...extractQueryStringDbToken,
                         ...extractBodyDbToken
                     ]
-                    const dbSelected = filterDababase(dbTokens, myProject.database.data)
-                    const responseBody = dbSelected.map(db => mapDatabase(response.response.body, db))
-                    
-                    setTimeout(async () => {
-                        // Create log
-                        const log = {
-                            _id: encrypt.virtualId(7),
-                            path: `/${path}`,
-                            method: myMethod.id,
-                            request: {
-                                client: {},
-                                headers: req.headers,
-                                body: req.body,
-                                queryString: req.query
-                            },
-                            response: {
-                                headers: response.response.headers,
-                                body: responseBody,
-                                delay: response.response.delay,
-                                statusCode: response.response.statusCode
-                            },
-                            project: myProject.id
-                        }
-                        await Log.create(log)
-                        res
-                            .status(response.response.statusCode)
-                            .header(response.response.headers)
-                            .json(responseBody)
-                    }, response.response.delay)
-                    hasCorrect = true
+                    dataResponse = {}
+                    if (dbTokens.length > 0) {
+                        const dbSelected = filterDababase(dbTokens, myProject.database.data)
+                        dataResponse.body = dbSelected.map(db => mapDatabase(response.response.body, db))
+                    } else {
+                        dataResponse.body = response.response.body
+                    }
+                    dataResponse.headers = response.response.headers
+                    dataResponse.statusCode = response.response.statusCode
+                    dataResponse.delay = response.response.delay
                     break
+                } else {
+                    if (response.isDefault) {
+                        dataResponse = {}
+                        dataResponse.body = response.response.body
+                        dataResponse.headers = response.response.hedaers
+                        dataResponse.statusCode = response.response.statusCode
+                        dataResponse.delay = response.response.delay
+                    }
                 }
             }
-            if (!hasCorrect) {
+            if (dataResponse) {
+                setTimeout(async () => {
+                    // Create log
+                    const log = {
+                        _id: encrypt.virtualId(7),
+                        path: `/${path}`,
+                        method: myMethod.id,
+                        request: {
+                            client: {},
+                            headers: req.headers,
+                            body: req.body,
+                            queryString: req.query
+                        },
+                        response: {
+                            headers: dataResponse.headers,
+                            body: dataResponse.body,
+                            delay: dataResponse.delay,
+                            statusCode: dataResponse.statusCode
+                        },
+                        project: myProject.id
+                    }
+                    await Log.create(log)
+                    res
+                        .status(dataResponse.statusCode)
+                        .header(dataResponse.headers)
+                        .json(dataResponse.body)
+                }, dataResponse.delay)
+            } else {
                 res.status(404).json({e:'Api not fount'})
             }
         } else {
