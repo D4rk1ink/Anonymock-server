@@ -8,38 +8,42 @@ import * as verify from './verify.controller'
 
 export const create = async (req: Request, res: EResponse) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
-        const { endpoint, environment } = req.body
-        const myEndpoint = await Endpoint.findById(endpoint)
-        if (myEndpoint) {
-            const response = await Response.create({
-                name: 'New Response',
-                environment: environment,
-                condition: {
-                    headers: {},
-                    body: {},
-                    params: {},
-                    queryString: {}
-                },
-                response: {
-                    headers: {},
-                    body: {},
-                    delay: 10,
-                    statusCode: 200
-                },
-                endpoint: endpoint
-            })
-            const updateEndpoint = await Endpoint.update(endpoint, { $push: { responses: response.id }})
-            const data = {
-                id: response.id,
-                name: response.name,
-                response: {
-                    delay: response.response.delay,
-                    statusCode: response.response.statusCode
+        try {
+            const { endpoint, environment } = req.body
+            const myEndpoint = await Endpoint.findById(endpoint)
+            if (myEndpoint) {
+                const response = await Response.create({
+                    name: 'New Response',
+                    environment: environment,
+                    condition: {
+                        headers: {},
+                        body: {},
+                        params: {},
+                        queryString: {}
+                    },
+                    response: {
+                        headers: {},
+                        body: {},
+                        delay: 10,
+                        statusCode: 200
+                    },
+                    endpoint: endpoint
+                })
+                const updateEndpoint = await Endpoint.update(endpoint, { $push: { responses: response.id }})
+                const data = {
+                    id: response.id,
+                    name: response.name,
+                    response: {
+                        delay: response.response.delay,
+                        statusCode: response.response.statusCode
+                    }
                 }
+                res.json(preResponse.data(data))
+            } else {
+                res.json(preResponse.error(null, 'Endpoint not found'))
             }
-            res.json(preResponse.data(data))
-        } else {
-            res.json(preResponse.error(null, 'Endpoint not found'))
+        } catch (err) {
+            res.json(preResponse.error(null, 'Create fail'))
         }
     } else {
         res
@@ -65,6 +69,26 @@ export const update = async (req: Request, res: EResponse) => {
             }
         } else {
             res.json(preResponse.error(null, 'Type not work'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const setDefault = async (req: Request, res: EResponse) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        const id = req.params.id
+        const { isDefault } = req.body
+        const findResponse = await Response.findById(id)
+        if (findResponse) {
+            await Response.getModel().update({ endpoint: findResponse.endpoint, environment: findResponse.environment }, { isDefault: false })
+            await Response.update(findResponse.id, { isDefault: !findResponse.isDefault })
+            const myResponse = await Response.findById(id, 'id isDefault')
+            res.json(preResponse.data(myResponse))
+        } else {
+            res.json(preResponse.error(null, 'Response not found'))
         }
     } else {
         res

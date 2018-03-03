@@ -9,7 +9,12 @@ const ResponseSchema = new Schema({
     },
     environment: {
         type: String,
-        required: true
+        required: true,
+        enum: ['dev', 'test']
+    },
+    isDefault: {
+        type: Boolean,
+        default: false
     },
     condition: {
         params: {

@@ -6,6 +6,7 @@ interface IResponseModel extends Document {
     id: string
     name: string
     environment: string
+    isDefault: boolean
     condition: {
         params: any,
         headers: any,
