@@ -80,10 +80,9 @@ export const update = async (req: Request, res: EResponse) => {
 export const setDefault = async (req: Request, res: EResponse) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const id = req.params.id
-        const { isDefault } = req.body
         const findResponse = await Response.findById(id)
         if (findResponse) {
-            await Response.getModel().update({ endpoint: findResponse.endpoint, environment: findResponse.environment }, { isDefault: false })
+            await Response.getModel().updateMany({ endpoint: findResponse.endpoint, environment: findResponse.environment }, { isDefault: false })
             await Response.update(findResponse.id, { isDefault: !findResponse.isDefault })
             const myResponse = await Response.findById(id, 'id isDefault')
             res.json(preResponse.data(myResponse))
@@ -116,11 +115,10 @@ export const getById = async (req: Request, res: EResponse) => {
 export const search = async (req: Request, res: EResponse) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const { endpoint, search, environment } = req.query
-        const myResponses = await Response.search(endpoint, search, environment, 'id name response')
+        const myResponses = await Response.search(endpoint, search, environment, 'id name response isDefault')
         const data = myResponses.map(response => {
             return {
-                id: response.id,
-                name: response.name,
+                ...response.toJSON(),
                 response: {
                     delay: response.response.delay,
                     statusCode: response.response.statusCode
