@@ -23,7 +23,6 @@ export class Server {
         this.app.use(cors())
         this.app.use(bodyParser.json({ limit: '2mb' }))
         this.app.use(bodyParser.urlencoded({ limit: '2mb', extended: true }))
-        this.app.use(express.static(path.join(__dirname, 'dist')))
     }
 
     public mongodb () {
@@ -55,6 +54,10 @@ export class Server {
             routes.position,
             routes.api,
         ])
+        this.app.use(express.static(path.join(__dirname, '../public')))
+        this.app.get('*', (req, res) => {
+            res.sendfile(path.join(__dirname, '../public/index.html'))
+        })
     }
 
     public start () {
