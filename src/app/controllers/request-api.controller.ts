@@ -16,7 +16,7 @@ export const request = async (req: Request, res: Response) => {
         const paramPattern = /{{\s*([A-Za-z0-9\-]+)\s*}}/g
         const folderIds = myProject.folders
         const myEndpoint = await Endpoint.getModel().findOne({ folder: { $in: folderIds }, method: myMethod,
-            $where: `new RegExp(this.path.replace(${paramPattern}, '([^/]+)')).test("/${path}")`
+            $where: `new RegExp("^"+this.path.replace(${paramPattern}, '([^/]+)')+"$").test("/${path}")`
         })
         .populate('method')
         .populate({
@@ -52,7 +52,7 @@ export const request = async (req: Request, res: Response) => {
                 const extractParamsDbToken = extractDbToken(params, response.condition.params)
                 const extractHeadersDbToken = extractDbToken(req.headers, response.condition.headers)
                 const extractQueryStringDbToken = extractDbToken(req.query, response.condition.queryString)
-
+                
                 let extractBodyDbToken = []
                 if (method !== 'GET') {
                     extractBodyDbToken = extractDbToken(req.body, response.condition.body)
@@ -69,7 +69,13 @@ export const request = async (req: Request, res: Response) => {
                         const dbSelected = filterDababase(dbTokens, myProject.database.data)
                         dataResponse.body = dbSelected.map(db => mapDatabase(response.response.body, db))
                     } else {
-                        dataResponse.body = response.response.body
+                        const regex_token = /{{\s*\$db.([^}}\s]+)\s*}}/g
+                        if (new RegExp(regex_token).test(JSON.stringify(response.response.body))) {
+                            const dbSelected = myProject.database.data
+                            dataResponse.body = dbSelected.map(db => mapDatabase(response.response.body, db))
+                        } else {
+                            dataResponse.body = response.response.body
+                        }
                     }
                     dataResponse.headers = response.response.headers
                     dataResponse.statusCode = response.response.statusCode
@@ -116,10 +122,10 @@ export const request = async (req: Request, res: Response) => {
                 res.status(404).json({e:'Api not fount'})
             }
         } else {
-            res.status(404).json({e:'Endpoint not found'})
+            res.status(404).json({e:'Api not fount'})
         }
     } else {
-        res.status(404).json({e:'Project not found'})
+        res.status(404).json({e:'Api not fount'})
     }
 }
 
@@ -153,7 +159,6 @@ const mapDatabase = (template, database) => {
 
 const extractDbToken = (data, correctData) => {
     let temp: any = []
-    const regex_token = /{{\s*\$db.([^}}\s]+)\s*}}/g
     if (Array.isArray(data) !== Array.isArray(correctData)) {
         return false
     }
