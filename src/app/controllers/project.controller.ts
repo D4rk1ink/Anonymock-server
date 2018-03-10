@@ -84,7 +84,6 @@ export const update = async (req: Request, res: Response) => {
 }
 
 export const deleteProject = async (req: Request, res: Response) => {
-    return res.json(preResponse.error(null, 'to do'))
     const id = req.headers.projectid
     if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
         try {
