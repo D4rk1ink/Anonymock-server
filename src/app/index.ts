@@ -39,7 +39,7 @@ export class Server {
     }
 
     public routes () {
-        this.app.use((req,res,next) => {setTimeout(next,1000)})
+        // this.app.use((req,res,next) => {setTimeout(next,1000)})
         this.app.use('/api', [
             routes.auth,
             routes.user,

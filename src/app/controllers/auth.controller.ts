@@ -8,7 +8,7 @@ import * as certificate from '../utils/certificate.utils'
 export const signin = async (req: Request, res: Response) => {
     const { username, password } = req.body
     const user = await User.findOne({ username })
-    if (user && encrypt.compare(password, user.password)) {
+    if (user && encrypt.compare(password, user.password) && user.isApproved && !user.deactivated) {
         const token = certificate.sign({
             id: user.id,
             isAdmin: user.isAdmin
