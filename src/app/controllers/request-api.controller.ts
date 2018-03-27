@@ -67,7 +67,11 @@ export const request = async (req: Request, res: Response) => {
                     dataResponse = {}
                     if (dbTokens.length > 0) {
                         const dbSelected = filterDababase(dbTokens, myProject.database.data)
-                        dataResponse.body = dbSelected.map(db => mapDatabase(response.response.body, db))
+                        if (response.response.isFindOne) {
+                            dataResponse.body = mapDatabase(response.response.body, dbSelected[0])
+                        } else {
+                            dataResponse.body = dbSelected.map(db => mapDatabase(response.response.body, db))
+                        }
                     } else {
                         const regex_token = /{{\s*\$db.([^}}\s]+)\s*}}/g
                         if (new RegExp(regex_token).test(JSON.stringify(response.response.body))) {
