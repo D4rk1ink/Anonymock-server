@@ -1,5 +1,6 @@
 import { Request, Response, preResponse } from '../utils/express.util'
 import { Project } from '../models/project'
+import { Scraper } from '../models/scraper'
 import { Folder } from '../models/folder'
 import { Endpoint } from '../models/endpoint'
 import { Log } from '../models/log'
@@ -48,11 +49,13 @@ export const create = async (req: Request, res: Response) => {
         try {
             const { name } = req.body
             const projectId = encrypt.virtualId(3)
+            const scraperId = encrypt.virtualId(3)
             const project = await Project.create({ _id: projectId, name: name })
+            const scraper = await Scraper.create({ _id: scraperId, project: project.id })
             const smallProject = {
                 id: project.id,
                 name: project.name,
-                status: project.status
+                status: project.status,
             }
             res.json(preResponse.data(smallProject))
         } catch (err) {

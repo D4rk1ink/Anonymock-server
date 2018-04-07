@@ -1,6 +1,7 @@
 import { Request, Response, preResponse } from '../utils/express.util';
 import { Folder } from '../models/folder'
 import { Project } from '../models/project'
+import { Scraper } from '../models/scraper'
 import { Endpoint } from '../models/endpoint'
 import { Method } from '../models/method'
 import { ScraperEndpoint } from '../models/scraper-endpoint'
@@ -8,25 +9,41 @@ import { ScraperRequest } from '../models/scraper-request'
 import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
 
+export const getScraper = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const { projectid } = req.headers
+            const myScraper = Scraper.findOne({ project: projectid }, 'id baseAPI')
+            if (myScraper) {
+                res.json(preResponse.data(myScraper))
+            } else {
+                res.json(preResponse.error(null, 'Scraper not found'))
+            }
+        } catch (err) { }
+    }
+}
+
 export const createEndpoint = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { projectid } = req.headers
             const myFolder = await Folder.findOne({ project: projectid })
             const myMethod = await Method.findOne({ name: 'GET' }, 'id name')
-            if (myFolder && myMethod) {
+            const myScraper = await Scraper.findOne({ project: projectid })
+            if (myScraper && myFolder && myMethod) {
                 const scraperEndpointId = encrypt.virtualId(4)
                 const endpoint = await ScraperEndpoint.create({
                     _id: scraperEndpointId,
                     name: 'New Endpoint',
                     method: myMethod.id,
                     path: `/new-endpoint-${scraperEndpointId}`,
-                    folder: myFolder.id
+                    folder: myFolder.id,
+                    scraper: myScraper.id
                 })
                 endpoint.method = myMethod
                 res.json(preResponse.data(endpoint))
             } else {
-                res.json(preResponse.error(null, 'Folder not found'))
+                res.json(preResponse.error(null, 'Some thing not found'))
             }
         } catch (err) {
             res.json(preResponse.error(null, 'Create fail'))
@@ -97,10 +114,15 @@ export const update = async (req: Request, res: Response) => {
 */
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
-        const { project, search, page } = req.query
-        const myProject = await Project.findById(project, 'folders')
-        const endpointsCount = await ScraperEndpoint.search(search, page, 'id method name path requests').count()
-        const endpoints = await ScraperEndpoint.search(search, page, 'id method name path requests')
+        const { search, page } = req.query
+        const { projectid } = req.headers
+        let scraperId = ''
+        const myScraper = await Scraper.findOne({ project: projectid })
+        if (myScraper) {
+            scraperId = myScraper.id
+        }
+        const endpointsCount = await ScraperEndpoint.search(scraperId, search, page, 'id method folder name path requests').count()
+        const endpoints = await ScraperEndpoint.search(search, page, 'id method folder name path requests')
             .skip((page - 1) * 10)
             .limit(10)
         const data = {

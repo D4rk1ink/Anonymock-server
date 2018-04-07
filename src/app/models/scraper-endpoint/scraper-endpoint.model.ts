@@ -8,7 +8,8 @@ interface IScraperEndpointModel extends Document {
     method: any
     folder: any
     path: string
-    requests: any[]
+    requests: any[],
+    scraper: string
 }
 
 const ScraperEndpointModel = model<IScraperEndpointModel>('ScraperEndpoint', ScraperEndpointSchema)
@@ -46,14 +47,17 @@ export class ScraperEndpoint {
             .populate('method', 'id name')
     }
 
-    static search (search, page, fields = '') {
+    static search (scraper, search, page, fields = '') {
         return ScraperEndpointModel.find({
-            $or: [
+            $and: [{
+                scraper: scraper
+            }, { $or: [
                 { name: new RegExp(search, 'gi') },
                 { path: new RegExp(search, 'gi') }
-            ]
+            ] }]
         }, fields)
             .populate('method', 'id name')
+            .populate('folder', 'id name')
             .populate('requests')
     }
 }

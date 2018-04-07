@@ -9,7 +9,7 @@ const ScraperSchema = new Schema({
     },
     baseAPI: {
         type: String,
-        required: true
+        default: ''
     },
     environment: {
         type: Object,

@@ -32,10 +32,16 @@ const ScraperEndpointSchema = new Schema({
             ref: 'ScraperRequest',
             required: true
         }
-    ]
+    ],
+    scraper: {
+        type: String,
+        ref: 'Scraper',
+        required: true
+    }
 }, {
         toObject: { virtuals: true },
-        toJSON: { virtuals: true }
+        toJSON: { virtuals: true },
+        minimize: false
     }
 )
 

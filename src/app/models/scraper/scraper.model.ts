@@ -34,8 +34,8 @@ export class Scraper {
         return await ScraperModel.findById(id, fields)
     }
 
-    static async findOne (condition) {
-        return await ScraperModel.findOne(condition)
+    static async findOne (condition, fields = '') {
+        return await ScraperModel.findOne(condition, fields)
     }
 
     static async findAll (condition = {}, fields = '') {
