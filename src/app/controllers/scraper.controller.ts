@@ -82,22 +82,26 @@ export const createRequest = async (req: Request, res: Response) => {
             .json(preResponse.error(null, 'Unauth'))
     }
 }
-/*
-export const update = async (req: Request, res: Response) => {
+
+export const updateEndpoint = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const id = req.params.id
-        const { name, path, method, folder } = req.body
+        const { name, path, method, folder, requests } = req.body
         const findFolder =  await Folder.findById(folder)
         const findMethod =  await Method.findById(method)
-        const findEndpoint = await Endpoint.findById(id)
+        const findEndpoint = await ScraperEndpoint.findById(id)
         if (findFolder && findMethod) {
             if (findEndpoint) {
-                if (findFolder.id !== findEndpoint.folder) {
-                    await Folder.update(findEndpoint.folder, { $pull: { endpoints: findEndpoint.id }}) // remove endpoint from old folder
-                    await Folder.update(findFolder.id, { $push: { endpoints: findEndpoint.id }}) // add endpoint to new folder
+                await ScraperEndpoint.update(id, { name, path, method, folder })
+                for (const request of requests) {
+                    await ScraperRequest.update(request.id, {
+                        name: request.name,
+                        environment: request.environment,
+                        isDefault: request.isDefault,
+                        request: request.request
+                    })
                 }
-                await Endpoint.update(id, { name, path, method, folder })
-                const myEndpoint = await Endpoint.findById(id)
+                const myEndpoint = await ScraperEndpoint.findById(id)
                 res.json(preResponse.data(myEndpoint))
             } else {
                 res.json(preResponse.error(null, 'Endpoint not found'))
@@ -111,7 +115,26 @@ export const update = async (req: Request, res: Response) => {
             .json(preResponse.error(null, 'Unauth'))
     }
 }
-*/
+
+export const setDefault = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        const id = req.params.id
+        const findRequest = await ScraperRequest.findById(id)
+        if (findRequest) {
+            await ScraperRequest.getModel().updateMany({ endpoint: findRequest.endpoint, environment: findRequest.environment }, { isDefault: false })
+            await ScraperRequest.update(findRequest.id, { isDefault: !findRequest.isDefault })
+            const myRequest = await ScraperRequest.findById(id, 'id isDefault endpoint')
+            res.json(preResponse.data(myRequest))
+        } else {
+            res.json(preResponse.error(null, 'Response not found'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const { search, page } = req.query
@@ -122,7 +145,7 @@ export const search = async (req: Request, res: Response) => {
             scraperId = myScraper.id
         }
         const endpointsCount = await ScraperEndpoint.search(scraperId, search, page, 'id method folder name path requests').count()
-        const endpoints = await ScraperEndpoint.search(search, page, 'id method folder name path requests')
+        const endpoints = await ScraperEndpoint.search(scraperId, search, page, 'id method folder name path requests')
             .skip((page - 1) * 10)
             .limit(10)
         const data = {
