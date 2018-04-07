@@ -7,8 +7,9 @@ const router = express.Router()
 
 router.post('/scraper', scraper.getScraper)
 router.post('/scraper/endpoint', scraper.createEndpoint)
+router.patch('/scraper/endpoint/:id', scraper.updateEndpoint)
 router.post('/scraper/request', scraper.createRequest)
-// router.patch('/scraper/:id', scraper.update)
+router.patch('/scraper/request/:id/default', scraper.setDefault)
 router.get('/search/scraper', scraper.search)
 
 routerIndex.use('/project', auth.verify, router)
