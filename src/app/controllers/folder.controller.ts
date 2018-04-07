@@ -82,14 +82,15 @@ export const getById = async (req: Request, res: Response) => {
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
-            const { project, search, page, all } = req.query
+            const { search, page, all } = req.query
+            const { projectid } = req.headers
             let folders: any[] = []
             let foldersCount = 0
             if (all) {
-                folders = await Folder.findAll({ project: project })
+                folders = await Folder.findAll({ project: projectid })
             } else {
-                foldersCount = await Folder.search(project, search, page).count()
-                folders = await Folder.search(project, search, page)
+                foldersCount = await Folder.search(projectid, search, page).count()
+                folders = await Folder.search(projectid, search, page)
                     .skip((page - 1) * 10)
                     .limit(10)
             }
