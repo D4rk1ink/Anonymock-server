@@ -48,6 +48,7 @@ export class Server {
             routes.method,
             routes.database,
             routes.folder,
+            routes.scraper,
             routes.endpoint,
             routes.response,
             routes.log,
