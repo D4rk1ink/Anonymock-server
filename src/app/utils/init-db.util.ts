@@ -35,7 +35,7 @@ const staticMethods = [
         name: 'PUT'
     },
     {
-        name: 'PATH'
+        name: 'PATCH'
     },
     {
         name: 'DELETE'
