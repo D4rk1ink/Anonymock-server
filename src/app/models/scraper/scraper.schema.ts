@@ -11,10 +11,6 @@ const ScraperSchema = new Schema({
         type: String,
         default: ''
     },
-    environment: {
-        type: Object,
-        default: {}
-    },
     endpoints: [
         {
             type: String,
