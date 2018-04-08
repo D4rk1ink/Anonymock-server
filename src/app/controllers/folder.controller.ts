@@ -38,7 +38,7 @@ export const create = async (req: Request, res: Response) => {
 }
 
 export const update = async (req: Request, res: Response) => {
-    if (await verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const id = req.params.id
             const { name } = req.body
