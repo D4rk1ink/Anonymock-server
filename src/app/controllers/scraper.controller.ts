@@ -23,6 +23,20 @@ export const getScraper = async (req: Request, res: Response) => {
     }
 }
 
+export const updateScraper = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        const { projectid } = req.headers
+        const { baseAPI } = req.body
+        await Scraper.getModel().updateOne({ project: projectid }, { baseAPI: baseAPI })
+        const scraper = Scraper.findOne({ project: projectid })
+        res.json(preResponse.data(scraper))
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const createEndpoint = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
