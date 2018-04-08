@@ -6,6 +6,7 @@ const routerIndex = express.Router()
 const router = express.Router()
 
 router.post('/scraper', scraper.getScraper)
+router.patch('/scraper', scraper.updateScraper)
 router.post('/scraper/endpoint', scraper.createEndpoint)
 router.patch('/scraper/endpoint/:id', scraper.updateEndpoint)
 router.post('/scraper/request', scraper.createRequest)
