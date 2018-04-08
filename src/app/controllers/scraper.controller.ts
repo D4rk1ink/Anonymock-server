@@ -13,7 +13,7 @@ export const getScraper = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { projectid } = req.headers
-            const myScraper = Scraper.findOne({ project: projectid }, 'id baseAPI')
+            const myScraper = await Scraper.findOne({ project: projectid }, 'id baseAPI')
             if (myScraper) {
                 res.json(preResponse.data(myScraper))
             } else {
@@ -28,7 +28,7 @@ export const updateScraper = async (req: Request, res: Response) => {
         const { projectid } = req.headers
         const { baseAPI } = req.body
         await Scraper.getModel().updateOne({ project: projectid }, { baseAPI: baseAPI })
-        const scraper = Scraper.findOne({ project: projectid })
+        const scraper = await Scraper.findOne({ project: projectid }, 'id baseAPI')
         res.json(preResponse.data(scraper))
     } else {
         res
@@ -115,7 +115,10 @@ export const updateEndpoint = async (req: Request, res: Response) => {
                         request: request.request
                     })
                 }
-                const myEndpoint = await ScraperEndpoint.findById(id)
+                const myEndpoint = await ScraperEndpoint.getModel().findById(id)
+                    .populate('folder', 'id name')
+                    .populate('method', 'id name')
+                    .populate('requests')
                 res.json(preResponse.data(myEndpoint))
             } else {
                 res.json(preResponse.error(null, 'Endpoint not found'))
