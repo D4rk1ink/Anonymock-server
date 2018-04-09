@@ -93,7 +93,6 @@ export const deleteProject = async (req: Request, res: Response) => {
             const findProject = await Project.findById(id)
             if (findProject) {
                 const endpointIds = (await Endpoint.findAll({ folder: { $in: findProject.folders }})).map(endpoint => endpoint.id)
-
                 await Log.getModel().deleteMany({ project: findProject.id })
                 await Log.getModel().deleteMany({ project: findProject.id })
                 await Folder.getModel().deleteMany({ project: findProject.id })

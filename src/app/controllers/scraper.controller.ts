@@ -55,6 +55,7 @@ export const createEndpoint = async (req: Request, res: Response) => {
                     scraper: myScraper.id
                 })
                 endpoint.method = myMethod
+                await Scraper.update(myScraper.id, { $push: { endpoints: endpoint.id }})
                 res.json(preResponse.data(endpoint))
             } else {
                 res.json(preResponse.error(null, 'Some thing not found'))
@@ -82,7 +83,7 @@ export const createRequest = async (req: Request, res: Response) => {
                     environment: environment,
                     endpoint: myEndpoint.id
                 })
-                const updateEndpoint = await ScraperEndpoint.update(myEndpoint.id, { $push: { requests: request.id }})
+                await ScraperEndpoint.update(myEndpoint.id, { $push: { requests: request.id }})
                 res.json(preResponse.data(request))
             } else {
                 res.json(preResponse.error(null, 'Endpoint not found'))
