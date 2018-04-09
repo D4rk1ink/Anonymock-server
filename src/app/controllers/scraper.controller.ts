@@ -176,3 +176,43 @@ export const search = async (req: Request, res: Response) => {
             .json(preResponse.error(null, 'Unauth'))
     }
 }
+
+export const deleteEndpoint = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myEndpoint = await ScraperEndpoint.findById(id)
+            if (myEndpoint) {
+                await ScraperRequest.getModel().deleteMany({ endpoint: myEndpoint.id })
+                await ScraperEndpoint.remove(myEndpoint.id)
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Request not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    }
+}
+
+export const deleteRequest = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myRequest = await ScraperRequest.findById(id)
+            if (myRequest) {
+                await ScraperRequest.remove(id)
+                await ScraperEndpoint.update(myRequest.endpoint, { $pull: { requests: myRequest.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Request not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
