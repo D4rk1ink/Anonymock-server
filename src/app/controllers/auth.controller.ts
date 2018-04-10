@@ -19,7 +19,8 @@ export const signin = async (req: Request, res: Response) => {
                 id: user.id,
                 firstname: user.firstname,
                 lastname: user.lastname,
-                email: user.email
+                email: user.email,
+                picture: constants.DEFAULT_PROFILE_PICTURE
             }
         }
         res.json(preResponse.data(data))
