@@ -9,6 +9,7 @@ router.post('/endpoint', endpoint.create)
 router.get('/endpoint/:id', endpoint.getById)
 router.patch('/endpoint/:id', endpoint.update)
 router.get('/search/endpoint', endpoint.search)
+router.delete('/endpoint/:id', endpoint.deleteEndpoint)
 
 routerIndex.use('/project', auth.verify, router)
 

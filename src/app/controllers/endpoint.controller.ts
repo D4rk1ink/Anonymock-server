@@ -1,6 +1,7 @@
 import { Request, Response, preResponse } from '../utils/express.util';
 import { Folder } from '../models/folder'
 import { Endpoint } from '../models/endpoint'
+import { Response as ResponseModel } from '../models/response'
 import { Project } from '../models/project'
 import { Method } from '../models/method'
 import * as encrypt from '../utils/encrypt.util'
@@ -99,6 +100,29 @@ export const search = async (req: Request, res: Response) => {
             limitPage: Math.ceil(endpointsCount / 10)
         }
         res.json(preResponse.data(data))
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const deleteEndpoint = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myEndpoint = await Endpoint.findById(id)
+            if (myEndpoint) {
+                await ResponseModel.getModel().deleteMany({ endpoint: myEndpoint.id })
+                await Endpoint.remove(myEndpoint.id)
+                await Folder.update(myEndpoint.folder, { $pull: { endpoints: myEndpoint.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Endpoint not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
     } else {
         res
             .status(401)
