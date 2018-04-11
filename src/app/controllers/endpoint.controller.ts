@@ -60,19 +60,21 @@ export const getById = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const id = req.params.id
+        const { projectid } = req.headers
         const { name, path, method, folder } = req.body
-        const findFolder =  await Folder.findById(folder)
-        const findMethod =  await Method.findById(method)
-        const findEndpoint = await Endpoint.findById(id)
-        if (findFolder && findMethod) {
-            if (findEndpoint) {
-                if (findFolder.id !== findEndpoint.folder) {
-                    await Folder.update(findEndpoint.folder, { $pull: { endpoints: findEndpoint.id }}) // remove endpoint from old folder
-                    await Folder.update(findFolder.id, { $push: { endpoints: findEndpoint.id }}) // add endpoint to new folder
+        const myProject =  await Project.findById(projectid)
+        const myFolder =  await Folder.findById(folder)
+        const myMethod =  await Method.findById(method)
+        const myEndpoint = await Endpoint.findById(id)
+        if (myProject && myFolder && myMethod && myFolder.project === myProject.id) {
+            if (myEndpoint && myEndpoint.project === myProject.id) {
+                if (myFolder.id !== myEndpoint.folder) {
+                    await Folder.update(myEndpoint.folder, { $pull: { endpoints: myEndpoint.id }}) // remove endpoint from old folder
+                    await Folder.update(myFolder.id, { $push: { endpoints: myEndpoint.id }}) // add endpoint to new folder
                 }
                 await Endpoint.update(id, { name, path, method, folder })
-                const myEndpoint = await Endpoint.findById(id)
-                res.json(preResponse.data(myEndpoint))
+                const endpoint = await Endpoint.findById(id)
+                res.json(preResponse.data(endpoint))
             } else {
                 res.json(preResponse.error(null, 'Endpoint not found'))
             }
