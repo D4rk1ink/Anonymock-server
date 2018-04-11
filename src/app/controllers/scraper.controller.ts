@@ -7,6 +7,7 @@ import { Method } from '../models/method'
 import { ScraperEndpoint } from '../models/scraper-endpoint'
 import { ScraperRequest } from '../models/scraper-request'
 import * as encrypt from '../utils/encrypt.util'
+import * as map from '../utils/map.util'
 import * as verify from './verify.controller'
 
 export const getScraper = async (req: Request, res: Response) => {
@@ -205,6 +206,41 @@ export const deleteRequest = async (req: Request, res: Response) => {
                 await ScraperRequest.remove(id)
                 await ScraperEndpoint.update(myRequest.endpoint, { $pull: { requests: myRequest.id }})
                 res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Request not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const scrap = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const { projectid } = req.headers
+            const myProject = await Project.findById(projectid)
+            const myScraper = await Scraper.findOne({ project: projectid })
+                .populate('endpoints')
+                .populate('endpoints.$.requests')
+            if (myScraper && myProject) {
+                const environments = myProject.environments
+                const baseAPI = myScraper.baseAPI
+                for (const endpoint of myScraper.endpoints) {
+                    const mainPath = map.mapEnvironments(endpoint.path, environments)
+                    const method = endpoint.method.name
+                    for (const request of endpoint.requests) {
+                        const url = map.mapParams(mainPath, request.params)
+                        const body = map.mapEnvironments(request.request.body, environments)
+                        const headers = map.mapEnvironments(request.request.headers, environments)
+                        const queryString = map.mapEnvironments(request.request.queryString, environments)
+                    }
+                }
+                res.json(preResponse.data(myScraper))
             } else {
                 res.json(preResponse.error(null, 'Request not found'))
             }
