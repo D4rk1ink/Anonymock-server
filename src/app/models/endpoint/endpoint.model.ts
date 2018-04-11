@@ -7,6 +7,7 @@ interface IEndpointModel extends Document {
     name: string
     method: any
     folder: any
+    project: any
     path: string
     responses: any[]
 }

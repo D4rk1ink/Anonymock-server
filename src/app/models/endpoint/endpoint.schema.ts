@@ -26,6 +26,11 @@ const EndpointSchema = new Schema({
         ref: 'Folder',
         required: true
     },
+    project: {
+        type: String,
+        ref: 'Project',
+        required: true
+    },
     responses: [
         {
             type: Schema.Types.ObjectId,

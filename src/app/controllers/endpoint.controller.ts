@@ -10,17 +10,20 @@ import * as verify from './verify.controller'
 export const create = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
+            const { projectid } = req.headers
             const { folder } = req.body
+            const myProject = await Project.findById(projectid)
             const myFolder = await Folder.findById(folder)
             const myMethod = await Method.findOne({ name: 'GET' }, 'id name')
-            if (myFolder && myMethod) {
+            if (myProject && myFolder && myMethod && myFolder.project === myProject.id) {
                 const endpointId = encrypt.virtualId(4)
                 const endpoint = await Endpoint.create({
                     _id: endpointId,
                     name: 'New Endpoint',
                     method: myMethod.id,
                     path: `/new-endpoint-${endpointId}`,
-                    folder: myFolder.id
+                    folder: myFolder.id,
+                    project: myProject.id
                 })
                 endpoint.method = myMethod
                 const updateFolder = await Folder.update(folder, { $push: { endpoints: endpoint.id }})
