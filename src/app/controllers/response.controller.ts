@@ -132,3 +132,25 @@ export const search = async (req: Request, res: EResponse) => {
             .json(preResponse.error(null, 'Unauth'))
     }
 }
+
+export const deleteResponse = async (req: Request, res: EResponse) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myResponse = await Response.findById(id)
+            if (myResponse) {
+                await Response.remove(myResponse.id)
+                await Endpoint.update(myResponse.endpoint, { $pull: { responses: myResponse.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Response not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
