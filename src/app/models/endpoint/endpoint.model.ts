@@ -38,6 +38,17 @@ export class Endpoint {
             .populate('folder', 'id name')
     }
 
+    static async findByRoute (path, method, project, except = '') {
+        const paramPattern = /{{\s*([A-Za-z0-9]+)\s*}}/g
+        path = path.trim()
+        if (path.substring(0, 1) !== '/') {
+            path = '/' + path
+        }
+        return EndpointModel.findOne({ project: project, method: method, _id: { $ne: except },
+            $where: `new RegExp("^"+this.path.replace(${paramPattern}, '([A-Za-z0-9]+|[^\/]+)')+"$").test("${path}")`
+        })
+    }
+
     static async findOne (condition) {
         return await EndpointModel.findOne(condition)
             .populate('method', 'id name')

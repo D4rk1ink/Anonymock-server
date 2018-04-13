@@ -68,13 +68,18 @@ export const update = async (req: Request, res: Response) => {
         const myEndpoint = await Endpoint.findById(id)
         if (myProject && myFolder && myMethod && myFolder.project === myProject.id) {
             if (myEndpoint && myEndpoint.project === myProject.id) {
-                if (myFolder.id !== myEndpoint.folder) {
-                    await Folder.update(myEndpoint.folder, { $pull: { endpoints: myEndpoint.id }}) // remove endpoint from old folder
-                    await Folder.update(myFolder.id, { $push: { endpoints: myEndpoint.id }}) // add endpoint to new folder
-                }
-                await Endpoint.update(id, { name, path, method, folder })
-                const endpoint = await Endpoint.findById(id)
-                res.json(preResponse.data(endpoint))
+                const duplicateEndpoint = await Endpoint.findByRoute(path, myMethod.id, myProject.id, myEndpoint.id)
+                if (!duplicateEndpoint) {
+                    if (myFolder.id !== myEndpoint.folder) {
+                        await Folder.update(myEndpoint.folder, { $pull: { endpoints: myEndpoint.id }}) // remove endpoint from old folder
+                        await Folder.update(myFolder.id, { $push: { endpoints: myEndpoint.id }}) // add endpoint to new folder
+                    }
+                    await Endpoint.update(id, { name, path: path.trim() , method, folder })
+                    const endpoint = await Endpoint.findById(id)
+                    res.json(preResponse.data(endpoint))
+                } else {
+                    res.json(preResponse.error(null, 'Endpoint route is duplicate'))
+                }         
             } else {
                 res.json(preResponse.error(null, 'Endpoint not found'))
             }
