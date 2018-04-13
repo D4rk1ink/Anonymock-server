@@ -33,8 +33,8 @@ export class Scraper {
         return await ScraperModel.findById(id, fields)
     }
 
-    static async findOne (condition, fields = '') {
-        return await ScraperModel.findOne(condition, fields)
+    static findOne (condition, fields = '') {
+        return ScraperModel.findOne(condition, fields)
     }
 
     static async findAll (condition = {}, fields = '') {
