@@ -11,6 +11,18 @@ const ScraperSchema = new Schema({
         type: String,
         default: ''
     },
+    http: {
+        headers: {
+            type: Object,
+            required: true,
+            default: {}
+        },
+        queryString: {
+            type: Object,
+            required: true,
+            default: {}
+        }
+    },
     endpoints: [
         {
             type: String,

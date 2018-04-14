@@ -5,6 +5,10 @@ import { Project } from '../project'
 interface IScraperModel extends Document {
     id: string
     baseAPI: string
+    http: {
+        headers: any,
+        queryString: any
+    }
     endpoints: any[]
     project: string
 }
