@@ -36,7 +36,8 @@ const ScraperSchema = new Schema({
     }  
 }, {
         toObject: { virtuals: true },
-        toJSON: { virtuals: true }
+        toJSON: { virtuals: true },
+        minimize: false
     }
 )
 
