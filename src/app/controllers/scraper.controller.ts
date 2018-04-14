@@ -1,11 +1,13 @@
-import { Request, Response, preResponse } from '../utils/express.util';
+import { Request, Response, preResponse } from '../utils/express.util'
 import { Folder } from '../models/folder'
 import { Project } from '../models/project'
 import { Scraper } from '../models/scraper'
 import { Endpoint } from '../models/endpoint'
+import { Response as ResponseModel } from '../models/response'
 import { Method } from '../models/method'
 import { ScraperEndpoint } from '../models/scraper-endpoint'
 import { ScraperRequest } from '../models/scraper-request'
+import * as HttpRequest from 'request'
 import * as encrypt from '../utils/encrypt.util'
 import * as map from '../utils/map.util'
 import * as verify from './verify.controller'
@@ -14,7 +16,7 @@ export const getScraper = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const { projectid } = req.headers
-            const myScraper = await Scraper.findOne({ project: projectid }, 'id baseAPI')
+            const myScraper = await Scraper.findOne({ project: projectid }, 'id baseAPI http')
             if (myScraper) {
                 res.json(preResponse.data(myScraper))
             } else {
@@ -27,8 +29,8 @@ export const getScraper = async (req: Request, res: Response) => {
 export const updateScraper = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         const { projectid } = req.headers
-        const { baseAPI } = req.body
-        await Scraper.getModel().updateOne({ project: projectid }, { baseAPI: baseAPI })
+        const { baseAPI, http } = req.body
+        await Scraper.getModel().updateOne({ project: projectid }, { baseAPI: baseAPI, http: http })
         const scraper = await Scraper.findOne({ project: projectid }, 'id baseAPI')
         res.json(preResponse.data(scraper))
     } else {
@@ -225,19 +227,25 @@ export const scrap = async (req: Request, res: Response) => {
             const { projectid } = req.headers
             const myProject = await Project.findById(projectid)
             const myScraper = await Scraper.findOne({ project: projectid })
-                .populate('endpoints')
-                .populate('endpoints.$.requests')
+                .populate({
+                    path: 'endpoints',
+                    populate: {
+                        path: 'method'
+                    }
+                })
             if (myScraper && myProject) {
-                const environments = myProject.environments
-                const baseAPI = myScraper.baseAPI
+                const environment = myProject.environments
                 for (const endpoint of myScraper.endpoints) {
-                    const mainPath = map.mapEnvironments(endpoint.path, environments)
-                    const method = endpoint.method.name
-                    for (const request of endpoint.requests) {
-                        const url = map.mapParams(mainPath, request.params)
-                        const body = map.mapEnvironments(request.request.body, environments)
-                        const headers = map.mapEnvironments(request.request.headers, environments)
-                        const queryString = map.mapEnvironments(request.request.queryString, environments)
+                    const duplicateEndpoint = await Endpoint.findByRoute(endpoint.path, endpoint.method, endpoint.project)
+                    if (!duplicateEndpoint) {
+                        scrapEndpoint(endpoint, myProject.id, {
+                            environment: environment,
+                            baseAPI: myScraper.baseAPI,
+                            headers: map.mapEnvironment(myScraper.http.headers, environment),
+                            queryString: map.mapEnvironment(myScraper.http.queryString, environment)
+                        }, async (err, res, body) => {
+                            
+                        })
                     }
                 }
                 res.json(preResponse.data(myScraper))
@@ -252,4 +260,96 @@ export const scrap = async (req: Request, res: Response) => {
             .status(401)
             .json(preResponse.error(null, 'Unauth'))
     }
+}
+
+export const scrapEndpoint = async (endpoint, project, mainData, cb) => {
+    const environment = mainData.environment
+    const baseAPI = mainData.baseAPI
+    const mainHeaders = mainData.headers
+    const mainQueryString = mainData.queryString
+    const path = map.mapEnvironment(endpoint.path, environment)
+    const methodName = endpoint.method.name
+
+    const endpointId = encrypt.virtualId(4)
+    const newEndpoint = await Endpoint.create({
+        _id: endpointId,
+        name: endpoint.name,
+        method: endpoint.method,
+        path: endpoint.path,
+        folder: endpoint.folder,
+        project: project
+    })
+    await Folder.update(endpoint.folder, { $push: { endpoints: newEndpoint.id }})
+
+    for (const requestId of endpoint.requests) {
+        const myRequest = await ScraperRequest.findById(requestId)
+        if (myRequest) {
+            const body = map.mapEnvironment(myRequest.request.body, environment)
+            const headers = Object.assign(mainHeaders, map.mapEnvironment(myRequest.request.headers, environment))
+            const queryString = Object.assign(mainQueryString, map.mapEnvironment(myRequest.request.queryString, environment))
+            const uri = baseAPI + map.mapParams(path, myRequest.request.params) + queryStringToPath(queryString)
+            const http = {
+                path: uri,
+                method: methodName.toLowerCase(),
+                body: body,
+                headers: headers
+            }
+            getResponse(http, async (err, res, body) => {
+                const newResponse = await ResponseModel.create({
+                    name: myRequest.name,
+                    environment: 'dev',
+                    condition: {
+                        headers: myRequest.request.headers,
+                        body: myRequest.request.body,
+                        params: myRequest.request.params,
+                        queryString: myRequest.request.queryString
+                    },
+                    response: {
+                        headers: {},
+                        body: body,
+                        delay: 10,
+                        statusCode: res.statusCode
+                    },
+                    isDefault: myRequest.isDefault,
+                    endpoint: newEndpoint.id
+                })
+                await Endpoint.update(newEndpoint.id, { $push: { responses: newResponse.id }})
+            })
+        }
+    }
+}
+
+const getResponse = async (http, cb) => {
+    const options = {
+        headers: http.headers,
+        body: http.body
+    } 
+    switch (http.method) {
+        case 'get':
+            return await HttpRequest.get(http.path, { headers: http.headers }, cb)
+            break
+        case 'post':
+            return await HttpRequest.post(http.path, options, cb)
+            break
+        case 'patch':
+            return await HttpRequest.patch(http.path, options, cb)
+            break
+        case 'put':
+            return await HttpRequest.put(http.path, options, cb)
+            break
+        case 'delete':
+            return await HttpRequest.delete(http.path, options, cb)
+            break
+        default :
+            return null 
+    }
+    
+}
+
+const queryStringToPath = (data) => {
+    let queryString = (Object.keys(data).length > 0) ? '?' : '' 
+    for (const key in data) {
+        queryString = `${queryString}${key}=${data[key]}&`
+    }
+    return queryString
 }

@@ -1,12 +1,17 @@
-export const mapEnvironments = (template, environment) => {
-    if (typeof template !== 'string') {
+export const mapEnvironment = (template, environment) => {
+    const isString = typeof template === 'string'
+    if (!isString) {
         template = JSON.stringify(template)
     }
     const regex_token = /{{\s*\$env.([^}}\s]+)\s*}}/g
     template = template.replace(regex_token, (match, capture) => {
         return environment[capture]
     })
-    return JSON.parse(template)
+    if (isString) {
+        return template
+    } else {
+        return JSON.parse(template)
+    }
 }
 
 export const mapDatabase = (template, database) => {
@@ -26,12 +31,17 @@ export const mapDatabase = (template, database) => {
 }
 
 export const mapParams = (template, params) => {
-    if (typeof template !== 'string') {
+    const isString = typeof template === 'string'
+    if (!isString) {
         template = JSON.stringify(template)
     }
     const regex_token = /{{\s*([^}}\s]+)\s*}}/g
     template = template.replace(regex_token, (match, capture) => {
         return params[capture]
     })
-    return JSON.parse(template)
+    if (isString) {
+        return template
+    } else {
+        return JSON.parse(template)
+    }
 }

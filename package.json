@@ -1,6 +1,6 @@
 {
   "name": "Mock-Server",
-  "version": "v1.0.0",
+  "version": "1.0.0",
   "scripts": {
     "dev": "nodemon --exec ts-node --cache-directory .tscache ./src/server.ts",
     "start": "ts-node --inspect ./src/server.ts"
@@ -17,6 +17,7 @@
     "jsonwebtoken": "^8.1.1",
     "mongoose": "^5.0.3",
     "nodemon": "^1.14.11",
+    "request": "^2.85.0",
     "ts-node": "^4.1.0",
     "typescript": "^2.7.1"
   },
@@ -30,5 +31,15 @@
     "dotenv": "^5.0.0",
     "karma-typescript": "^3.0.11",
     "mongoose-timestamp": "^0.6.0"
-  }
+  },
+  "description": "This README would normally document whatever steps are necessary to get your application up and running.",
+  "main": "karma.conf.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://darklink-v2@bitbucket.org/project-2-psu/mock-api-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/project-2-psu/mock-api-server#readme"
 }
