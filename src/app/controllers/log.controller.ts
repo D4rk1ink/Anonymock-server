@@ -4,9 +4,12 @@ import * as verify from './verify.controller'
 
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
-        const { project, search, page } = req.query
-        const logsCount = await Log.getModel().find({ project: project }).count()
-        const logs = await Log.search(project, search, page)
+        const { projectid } = req.headers
+        const { search, page } = req.query
+        const logsCount = await Log.search(projectid, search).count()
+        const logs = await Log.search(projectid, search)
+            .skip((page - 1) * 20)
+            .limit(20)
         const data = {
             logs: logs,
             limitPage: Math.ceil(logsCount / 20)
