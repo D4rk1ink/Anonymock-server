@@ -57,6 +57,7 @@ export const createEndpoint = async (req: Request, res: Response) => {
                     folder: myFolder.id,
                     scraper: myScraper.id
                 })
+                endpoint.folder = myFolder
                 endpoint.method = myMethod
                 await Scraper.update(myScraper.id, { $push: { endpoints: endpoint.id }})
                 res.json(preResponse.data(endpoint))
