@@ -38,7 +38,7 @@ export class Endpoint {
             .populate('folder', 'id name')
     }
 
-    static async findByRoute (path, method, project, except = '') {
+    static findByRoute (path, method, project, except = '') {
         const paramPattern = /{{\s*([A-Za-z0-9]+)\s*}}/g
         path = path.trim()
         if (path.substring(0, 1) !== '/') {
