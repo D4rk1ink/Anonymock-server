@@ -1,5 +1,6 @@
 import { Request, Response, preResponse } from '../utils/express.util';
 import { Folder } from '../models/folder'
+import { Response as ResponseModel } from '../models/response'
 import { Endpoint } from '../models/endpoint'
 import { Project } from '../models/project'
 import * as encrypt from '../utils/encrypt.util'
@@ -71,6 +72,30 @@ export const getById = async (req: Request, res: Response) => {
             }
         } catch (err) {
             res.json(preResponse.error(null, 'Get fail'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const deleteFolder = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myFolder = await Folder.findById(id)
+            if (myFolder) {
+                await ResponseModel.getModel().deleteMany({ endpoint: { $in: myFolder.endpoints }})
+                await Endpoint.getModel().deleteMany({ folder: myFolder.id })
+                await Folder.remove(id)
+                await Project.update(myFolder.project, { $pull: { folders: myFolder.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Folder not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, 'Delete fail'))
         }
     } else {
         res
