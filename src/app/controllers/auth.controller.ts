@@ -55,7 +55,9 @@ export const verify =  async (req: Request, res: Response, next: NextFunction) =
             req.certificate = cert
             next()
         } catch (err) {
-            res.json(preResponse.error(null, err.message))
+            res
+                .status(401)
+                .json(preResponse.error(null, err.message))
         }
     } else {
         res
