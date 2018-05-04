@@ -1,4 +1,5 @@
 import * as casual from 'casual'
+import { genIdCard } from './id-card'
 
 export const fake = (text) => {
     const regex_token = /{{\s*([^}}\s]+)\s*}}/g
@@ -25,9 +26,15 @@ export const fake = (text) => {
             case 'url':
                 return casual.url
             default:
+                const valIdCard = idCard(capture)
+                const valPhoneNumber = phoneNumber(capture)
                 const valRandom = random(capture)
                 const valDate = date(capture)
-                if (valRandom !== null) {
+                if (valIdCard !== null) {
+                    return valIdCard
+                } else if (valPhoneNumber !== null) {
+                    return valPhoneNumber
+                } else if (valRandom !== null) {
                     return valRandom
                 } else if (valDate !== null) {
                     return valDate
@@ -76,6 +83,42 @@ export const mapSchema = (data, schema) => {
         }
     }
     return data
+}
+
+const idCard = (capture) => {
+    const regex_phoneNumber = /^id_card\.(th|en)$/g
+    const exec = regex_phoneNumber.exec(capture)
+    if (exec) {
+        const arg = exec[1].trim()
+        switch (arg) {
+            case 'th':
+                return genIdCard()
+                break
+            case 'en':
+                return genIdCard()
+                break
+        }
+    }
+    return null
+}
+
+const phoneNumber = (capture) => {
+    const regex_phoneNumber = /^phone_number\.(th|en)$/g
+    const exec = regex_phoneNumber.exec(capture)
+    if (exec) {
+        const arg = exec[1].trim()
+        switch (arg) {
+            case 'th':
+                const first = ['06', '08', '09']
+                const last = Math.floor(Math.random() * (99999999 - 11111111) + 1111111111111111).toString()
+                const number = first[Math.floor(Math.random()*first.length)] + last
+                break
+            case 'en':
+                return casual.phone
+                break
+        }
+    }
+    return null
 }
 
 const random = (capture) => {
