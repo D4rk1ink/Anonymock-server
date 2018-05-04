@@ -108,13 +108,14 @@ const idCard = (capture) => {
 const phoneNumber = (capture) => {
     const regex_phoneNumber = /^phone_number\.(th|en)$/g
     const exec = regex_phoneNumber.exec(capture)
+    
     if (exec) {
         const arg = exec[1].trim()
         switch (arg) {
             case 'th':
                 const first = ['06', '08', '09']
-                const last = Math.floor(Math.random() * (99999999 - 11111111) + 1111111111111111).toString()
-                const number = first[Math.floor(Math.random()*first.length)] + last
+                const last = Math.floor(Math.random() * (99999999 - 11111111) + 11111111).toString()
+                return first[Math.floor(Math.random()*first.length)] + last
                 break
             case 'en':
                 return casual.phone
