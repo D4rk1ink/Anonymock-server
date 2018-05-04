@@ -37,18 +37,18 @@ const getDigit3 = (id2) => {
 }
  
 export const genIdCard = () => {
-    var e;
-    const id1 = randomInt(1, 8);
-    const id2 = randomInt(1, 9);
-    const id3 = getDigit3
-    const id4 = 0;
-    const id5 = randomInt(1, 5);
-    const id6 = 0;
-    const id7 = randomInt(1, 9);
-    const id8 = randomInt(0, 9);
-    const id9 = randomInt(0, 9);
-    const id10 = randomInt(0, 9);
-    const id11 = randomInt(0, 9);
-    const id12 = randomInt(1, 9);
-    const id13 = getDigit13(id1, id2, id3, id4, id5, id6, id7, id8, id9, id10, id11, id12);
+    const id1 = randomInt(1, 8)
+    const id2 = randomInt(1, 9)
+    const id3 = getDigit3(id2)
+    const id4 = 0
+    const id5 = randomInt(1, 5)
+    const id6 = 0
+    const id7 = randomInt(1, 9)
+    const id8 = randomInt(0, 9)
+    const id9 = randomInt(0, 9)
+    const id10 = randomInt(0, 9)
+    const id11 = randomInt(0, 9)
+    const id12 = randomInt(1, 9)
+    const id13 = getDigit13(id1, id2, id3, id4, id5, id6, id7, id8, id9, id10, id11, id12)
+    return `${id1}${id2}${id3}${id4}${id5}${id6}${id7}${id8}${id9}${id10}${id11}${id12}${id13}`
 }
