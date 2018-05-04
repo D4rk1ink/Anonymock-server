@@ -8,7 +8,7 @@ import * as certificate from '../utils/certificate.utils'
 export const signin = async (req: Request, res: Response) => {
     const { username, password } = req.body
     const user = await User.findOne({ username })
-    if (user && encrypt.compare(password, user.password)) {
+    if (user && encrypt.compare(password, user.password) && user.isApproved && !user.deactivated) {
         const token = certificate.sign({
             id: user.id,
             isAdmin: user.isAdmin
@@ -19,7 +19,8 @@ export const signin = async (req: Request, res: Response) => {
                 id: user.id,
                 firstname: user.firstname,
                 lastname: user.lastname,
-                email: user.email
+                email: user.email,
+                picture: constants.DEFAULT_PROFILE_PICTURE
             }
         }
         res.json(preResponse.data(data))
@@ -54,7 +55,9 @@ export const verify =  async (req: Request, res: Response, next: NextFunction) =
             req.certificate = cert
             next()
         } catch (err) {
-            res.json(preResponse.error(null, err.message))
+            res
+                .status(401)
+                .json(preResponse.error(null, err.message))
         }
     } else {
         res

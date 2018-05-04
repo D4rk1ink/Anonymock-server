@@ -1,10 +1,13 @@
 import * as casual from 'casual'
 import { genIdCard } from './id-card'
+import * as encrypt from '../utils/encrypt.util'
 
 export const fake = (text) => {
     const regex_token = /{{\s*([^}}\s]+)\s*}}/g
     text = text.replace(regex_token, (match, capture) => {
         switch (capture) {
+            case 'id':
+                return encrypt.virtualId(10)
             case 'firstname':
                 return casual.first_name
             case 'lastname':

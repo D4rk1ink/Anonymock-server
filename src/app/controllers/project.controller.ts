@@ -1,5 +1,8 @@
-import { Request, Response, preResponse } from '../utils/express.util'
+import { Request, Response, preResponse } from '../utils/express.util';
 import { Project } from '../models/project'
+import { Scraper } from '../models/scraper'
+import { ScraperEndpoint } from '../models/scraper-endpoint'
+import { ScraperRequest } from '../models/scraper-request'
 import { Folder } from '../models/folder'
 import { Endpoint } from '../models/endpoint'
 import { Log } from '../models/log'
@@ -48,11 +51,13 @@ export const create = async (req: Request, res: Response) => {
         try {
             const { name } = req.body
             const projectId = encrypt.virtualId(3)
+            const scraperId = encrypt.virtualId(3)
             const project = await Project.create({ _id: projectId, name: name })
+            const scraper = await Scraper.create({ _id: scraperId, project: project.id })
             const smallProject = {
                 id: project.id,
                 name: project.name,
-                status: project.status
+                status: project.status,
             }
             res.json(preResponse.data(smallProject))
         } catch (err) {
@@ -88,8 +93,12 @@ export const deleteProject = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
         try {
             const findProject = await Project.findById(id)
-            if (findProject) {
+            const myScraper = await Scraper.findOne({ project: id })
+            if (findProject && myScraper) {
                 const endpointIds = (await Endpoint.findAll({ folder: { $in: findProject.folders }})).map(endpoint => endpoint.id)
+                await ScraperRequest.getModel().deleteMany({ endpoint: { $in: myScraper.endpoints } })
+                await ScraperEndpoint.getModel().deleteMany({ scraper: myScraper.id })
+                await Scraper.getModel().deleteMany({ project: findProject.id })
                 await Log.getModel().deleteMany({ project: findProject.id })
                 await Folder.getModel().deleteMany({ project: findProject.id })
                 await Endpoint.getModel().deleteMany({ folder: { $in: findProject.folders } })
@@ -97,6 +106,8 @@ export const deleteProject = async (req: Request, res: Response) => {
                 await User.getModel().updateMany({ projects: findProject.id }, { $pull: { projects: findProject.id }})
                 await Project.remove(id)
                 res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Project not found'))
             }
         } catch (err) {
             res.json(preResponse.error(null, err.message))

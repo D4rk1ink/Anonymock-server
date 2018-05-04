@@ -1,3 +1,3 @@
-import { Log } from './Log.model'
+import { Log } from './log.model'
 
 export { Log }

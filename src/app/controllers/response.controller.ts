@@ -56,10 +56,12 @@ export const update = async (req: Request, res: EResponse) => {
     if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
         const id = req.params.id
         const { name, condition, response } = req.body
+        const conditionBody = json.isJSON(condition.body)
         const conditionHeaders = json.isJSON(condition.headers)
         const conditionQueryString = json.isJSON(condition.queryString)
+        const responseBody = json.isJSON(response.body)
         const responseHeaders = json.isJSON(response.headers)
-        if (conditionHeaders && conditionQueryString && responseHeaders) {
+        if (conditionBody && conditionHeaders && conditionQueryString && responseBody && responseHeaders) {
             await Response.update(id, { name, condition, response })
             const myResponse = await Response.findById(id)
             if (myResponse) {
@@ -126,6 +128,28 @@ export const search = async (req: Request, res: EResponse) => {
             }
         })
         res.json(preResponse.data(data))
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const deleteResponse = async (req: Request, res: EResponse) => {
+    if (await verify.verifyAdmin(req, res) || verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myResponse = await Response.findById(id)
+            if (myResponse) {
+                await Response.remove(myResponse.id)
+                await Endpoint.update(myResponse.endpoint, { $pull: { responses: myResponse.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Response not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, err.message))
+        }
     } else {
         res
             .status(401)

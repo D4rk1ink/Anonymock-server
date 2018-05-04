@@ -5,6 +5,7 @@ import member from './member.route'
 import method from './method.route'
 import database from './database.route'
 import folder from './folder.route'
+import scraper from './scraper.route'
 import endpoint from './endpoint.route'
 import response from './response.route'
 import log from './log.route'
@@ -19,6 +20,7 @@ export {
     method,
     database,
     folder,
+    scraper,
     endpoint,
     response,
     log,

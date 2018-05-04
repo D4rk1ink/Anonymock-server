@@ -56,6 +56,11 @@ const ResponseSchema = new Schema({
         statusCode: {
             type: Number,
             required: true
+        },
+        isFindOne: {
+            type: Boolean,
+            required: true,
+            default: false
         }
     },
     endpoint: {

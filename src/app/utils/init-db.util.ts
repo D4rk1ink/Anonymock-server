@@ -9,6 +9,7 @@ const staticUsers = [
         lastname: 'admin',
         username: constants.INIT_USERNAME,
         email: constants.INIT_EMAIL,
+        picture: constants.DEFAULT_PROFILE_PICTURE,
         password: constants.INIT_PASSWORD.toString(),
         isAdmin: true,
         isApproved: true
@@ -35,7 +36,7 @@ const staticMethods = [
         name: 'PUT'
     },
     {
-        name: 'PATH'
+        name: 'PATCH'
     },
     {
         name: 'DELETE'

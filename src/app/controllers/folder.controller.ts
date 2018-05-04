@@ -1,5 +1,6 @@
 import { Request, Response, preResponse } from '../utils/express.util';
 import { Folder } from '../models/folder'
+import { Response as ResponseModel } from '../models/response'
 import { Endpoint } from '../models/endpoint'
 import { Project } from '../models/project'
 import * as encrypt from '../utils/encrypt.util'
@@ -38,7 +39,7 @@ export const create = async (req: Request, res: Response) => {
 }
 
 export const update = async (req: Request, res: Response) => {
-    if (await verify.verifyMember(req, res)) {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const id = req.params.id
             const { name } = req.body
@@ -79,17 +80,42 @@ export const getById = async (req: Request, res: Response) => {
     }
 }
 
+export const deleteFolder = async (req: Request, res: Response) => {
+    if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
+        try {
+            const id = req.params.id
+            const myFolder = await Folder.findById(id)
+            if (myFolder) {
+                await ResponseModel.getModel().deleteMany({ endpoint: { $in: myFolder.endpoints }})
+                await Endpoint.getModel().deleteMany({ folder: myFolder.id })
+                await Folder.remove(id)
+                await Project.update(myFolder.project, { $pull: { folders: myFolder.id }})
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Folder not found'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, 'Delete fail'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
 export const search = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
-            const { project, search, page, all } = req.query
+            const { search, page, all } = req.query
+            const { projectid } = req.headers
             let folders: any[] = []
             let foldersCount = 0
             if (all) {
-                folders = await Folder.findAll({ project: project })
+                folders = await Folder.findAll({ project: projectid })
             } else {
-                foldersCount = await Folder.search(project, search, page).count()
-                folders = await Folder.search(project, search, page)
+                foldersCount = await Folder.search(projectid, search, page).count()
+                folders = await Folder.search(projectid, search, page)
                     .skip((page - 1) * 10)
                     .limit(10)
             }

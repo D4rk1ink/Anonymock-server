@@ -10,6 +10,7 @@ router.get('/response/:id', response.getById)
 router.get('/search/response', response.search)
 router.patch('/response/:id', response.update)
 router.patch('/response/:id/default', response.setDefault)
+router.delete('/response/:id', response.deleteResponse)
 
 routerIndex.use('/project', auth.verify, router)
 

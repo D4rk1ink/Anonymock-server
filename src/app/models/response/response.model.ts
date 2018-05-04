@@ -17,7 +17,8 @@ interface IResponseModel extends Document {
         headers: any,
         body: any,
         delay: number,
-        statusCode: number
+        statusCode: number,
+        isFindOne: boolean
     }
     endpoint: string
 }

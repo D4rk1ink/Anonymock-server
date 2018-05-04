@@ -23,7 +23,6 @@ export class Server {
         this.app.use(cors())
         this.app.use(bodyParser.json({ limit: '2mb' }))
         this.app.use(bodyParser.urlencoded({ limit: '2mb', extended: true }))
-        this.app.use(express.static(path.join(__dirname, 'dist')))
     }
 
     public mongodb () {
@@ -40,7 +39,7 @@ export class Server {
     }
 
     public routes () {
-        this.app.use((req,res,next) => {setTimeout(next,1000)})
+        // this.app.use((req,res,next) => {setTimeout(next,1000)})
         this.app.use('/api', [
             routes.auth,
             routes.user,
@@ -49,12 +48,17 @@ export class Server {
             routes.method,
             routes.database,
             routes.folder,
+            routes.scraper,
             routes.endpoint,
             routes.response,
             routes.log,
             routes.position,
             routes.api,
         ])
+        this.app.use(express.static(path.join(__dirname, '../public')))
+        this.app.get('*', (req, res) => {
+            res.sendfile(path.join(__dirname, '../public/index.html'))
+        })
     }
 
     public start () {

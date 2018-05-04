@@ -49,10 +49,8 @@ export class Log {
         return await LogModel.find(condition, fields)
     }
 
-    static async search (project, search, page, fields = '') {
-        return await LogModel.find({ project: project, path: new RegExp(search, 'i') }, fields)
+    static search (project, search, fields = '') {
+        return LogModel.find({ project: project, path: new RegExp(search, 'i') }, fields)
             .populate('method')
-            .skip((page - 1) * 20)
-            .limit(20)
     }
 }
