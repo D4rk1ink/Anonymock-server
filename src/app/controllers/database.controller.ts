@@ -1,7 +1,7 @@
 import { Request, Response, preResponse } from '../utils/express.util';
 import { Project } from '../models/project'
 import * as utilSchema from '../utils/schema.util'
-import * as fakeData from '../utils/fake-data.util'
+import * as fake from '../utils/fake-data.util'
 import * as verify from './verify.controller'
 
 export const get = async (req: Request, res: Response) => {
@@ -25,11 +25,10 @@ export const generate = async (req: Request, res: Response) => {
         const { project, schema, data, count } = req.body
         try {
             utilSchema.isSchema(schema)
-            const stringData = JSON.stringify(data)
-            utilSchema.verifyGenerate(stringData, schema)
+            utilSchema.verify(data, schema)
             const database = Array.apply(null, Array(count)).map(_ => {
-                const afterFakeData = fakeData.fake(stringData)
-                const afterMapData = fakeData.mapSchema(afterFakeData, schema)
+                const afterFakeData = fake.fake(data)
+                const afterMapData = fake.mapSchema(afterFakeData, schema)
                 return afterMapData
             })
             await Project.update(project, {

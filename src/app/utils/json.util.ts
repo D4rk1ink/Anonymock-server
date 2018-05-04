@@ -1,3 +1,7 @@
+export const clone = (original) => {
+    return JSON.parse(JSON.stringify(original))
+}
+
 export const isJSON = (json) => {
     return typeof json === 'object' && !Array.isArray(json)
 }

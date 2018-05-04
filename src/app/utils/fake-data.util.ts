@@ -1,8 +1,36 @@
 import * as casual from 'casual'
 import { genIdCard } from './id-card'
 import * as encrypt from '../utils/encrypt.util'
+import * as json from '../utils/json.util'
 
-export const fake = (text) => {
+export const fake = (_data) => {
+    let data = json.clone(_data)
+    if (data instanceof Array) {
+        for (const [i, datum] of data.entries()) {
+            data[i] = fake(datum)
+        }
+    } else if (typeof data === 'object') {
+        for (const key in data) {
+            if (/\<\d+\>$/.test(key) && data[key] instanceof Array) {
+                const numberExec = /\<(\d+)\>$/.exec(key)
+                const number = numberExec ? +numberExec[1] : 0
+                const baseData = data[key].length > 1 ? data[key] : data[key].length > 0 ? data[key][0] : []
+                const arr = Array.apply(null, Array(number)).map((i) => baseData)
+                const newKey = key.replace(/\<\d+\>$/, '')
+                data[newKey] = fake(arr)
+                delete data[key]
+            } else {
+                data[key] = fake(data[key])
+            }
+        }
+    } else if (typeof data === 'string') {
+        data = generateData(data)
+    }
+    
+    return data
+}
+
+export const generateData = (text) => {
     const regex_token = /{{\s*([^}}\s]+)\s*}}/g
     text = text.replace(regex_token, (match, capture) => {
         switch (capture) {
@@ -108,7 +136,6 @@ const idCard = (capture) => {
 const phoneNumber = (capture) => {
     const regex_phoneNumber = /^phone_number\.(th|en)$/g
     const exec = regex_phoneNumber.exec(capture)
-    
     if (exec) {
         const arg = exec[1].trim()
         switch (arg) {
