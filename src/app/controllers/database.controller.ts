@@ -26,7 +26,7 @@ export const generate = async (req: Request, res: Response) => {
         try {
             utilSchema.isSchema(schema)
             utilSchema.verify(data, schema)
-            const database = Array.apply(null, Array(count)).map(_ => {
+            const database = Array.apply(null, Array(+count)).map(_ => {
                 const afterFakeData = fake.fake(data)
                 const afterMapData = fake.mapSchema(afterFakeData, schema)
                 return afterMapData
