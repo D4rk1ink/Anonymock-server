@@ -7,6 +7,7 @@ import { Log } from '../models/log'
 import * as json from '../utils/json.util'
 import * as encrypt from '../utils/encrypt.util'
 import * as map from '../utils/map.util'
+import * as fake from '../utils/fake-data.util'
 import * as database from '../utils/database.util'
 
 export const request = async (req: Request, res: Response) => {
@@ -31,7 +32,9 @@ export const request = async (req: Request, res: Response) => {
                 response.condition.queryString = map.mapEnvironment(response.condition.queryString, myProject.environments)
                 
                 response.response.headers = map.mapEnvironment(response.response.headers, myProject.environments)
+                response.response.headers = fake.fake(response.response.headers)
                 response.response.body = map.mapEnvironment(response.response.body, myProject.environments)
+                response.response.body = fake.fake(response.response.body)
                 
                 const extractParamsDbToken = database.extractDbToken(params, response.condition.params)
                 const extractHeadersDbToken = database.extractDbToken(req.headers, response.condition.headers)
@@ -49,6 +52,9 @@ export const request = async (req: Request, res: Response) => {
                         ...extractBodyDbToken
                     ]
                     dataResponse = {}
+                    dataResponse.headers = response.response.headers
+                    dataResponse.statusCode = response.response.statusCode
+                    dataResponse.delay = response.response.delay
                     if (dbTokens.length > 0) {
                         const dbSelected = database.query(dbTokens, myProject.database.data)
                         if (response.response.isFindOne) {
@@ -56,6 +62,7 @@ export const request = async (req: Request, res: Response) => {
                                 dataResponse = null
                                 continue
                             }
+                            dataResponse.headers = map.mapDatabase(response.response.headers, dbSelected[0])
                             dataResponse.body = map.mapDatabase(response.response.body, dbSelected[0])
                         } else {
                             dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
@@ -68,9 +75,6 @@ export const request = async (req: Request, res: Response) => {
                             dataResponse.body = response.response.body
                         }
                     }
-                    dataResponse.headers = response.response.headers
-                    dataResponse.statusCode = response.response.statusCode
-                    dataResponse.delay = response.response.delay
                     break
                 } else {
                     if (response.isDefault) {
@@ -83,6 +87,8 @@ export const request = async (req: Request, res: Response) => {
                 }
             }
             if (dataResponse) {
+                dataResponse.body = fake.fake(dataResponse.body)
+                dataResponse.headers = fake.fake(dataResponse.headers)
                 setTimeout(async () => {
                     // Create log
                     const log = {

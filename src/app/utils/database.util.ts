@@ -20,8 +20,7 @@ export const extractDbToken = (data, correctData) => {
                 const a = extractDbToken(data[i], correctData[i])
                 if (Array.isArray(a)) {
                     temp = [...a, ...temp]
-                }
-                if (a === false) {
+                } else if (!a) {
                     return false
                 }
             }
@@ -34,8 +33,7 @@ export const extractDbToken = (data, correctData) => {
             const a = extractDbToken(data[key], correctData[key])
             if (Array.isArray(a)) {
                 temp = [...a, ...temp]
-            }
-            if (a === false) {
+            } else if (!a) {
                 return false
             }
         }
