@@ -39,7 +39,8 @@ export const signup = async (req: Request, res: Response) => {
             lastname,
             username,
             email,
-            password
+            password,
+            picture: constants.DEFAULT_PROFILE_PICTURE,
         })
         res.json(preResponse.data(user))
     } catch (err) {
