@@ -63,7 +63,12 @@ export const query = (conditions, db, isFindOne = false) => {
             let nested = data
             const keys = sections[0].replace(/^\.|\.$/g, '').split('.')
             for (const key of keys) {
-                nested = nested[key]
+                if (nested[key] !== undefined) {
+                    nested = nested[key]
+                } else {
+                    isCorrect = false
+                    break
+                }
             }
             if (sections.length > 1) {
                 // filter sub data
