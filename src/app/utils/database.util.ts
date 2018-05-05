@@ -54,23 +54,44 @@ export const extractDbToken = (data, correctData) => {
     return temp
 }
 
-export const query = (conditions, db) => {
+export const query = (conditions, db, isFindOne = false) => {
     let selected: any[] = []
     for (const data of db) {
         let isCorrect = false
         for (const condition of conditions) {
-            const keys = condition.key.split('.')
+            const sections = condition.key.split('$', 2)
             let nested = data
+            const keys = sections[0].replace(/^\.|\.$/g, '').split('.')
             for (const key of keys) {
                 nested = nested[key]
             }
-            if (typeof nested === 'boolean') {
-                condition.value = JSON.parse(condition.value) // ?
-            }
-            if (nested == condition.value) {
-                isCorrect = true
+            if (sections.length > 1) {
+                // filter sub data
+                nested = query([{ key: sections[1], value: condition.value }], nested)
+                if (nested.length > 0) {
+                    const setNest = (obj, keys, val) => {
+                        if(keys.length > 0){
+                            const key = keys.shift()
+                            obj[key] = setNest(obj[key], keys, val)
+                        } else{
+                            obj = val
+                        }
+                        return obj
+                    }
+                    if (isFindOne) {
+                        setNest(data, keys, nested[0])
+                    }
+                    isCorrect = true
+                } else {
+                    isCorrect = false
+                }
             } else {
-                isCorrect = false
+                if (typeof nested === 'boolean') {
+                    condition.value = JSON.parse(condition.value) // ?
+                }
+                isCorrect = nested == condition.value
+            }
+            if (!isCorrect) {
                 break
             }
         }

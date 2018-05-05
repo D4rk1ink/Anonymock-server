@@ -56,7 +56,7 @@ export const request = async (req: Request, res: Response) => {
                     dataResponse.statusCode = response.response.statusCode
                     dataResponse.delay = response.response.delay
                     if (dbTokens.length > 0) {
-                        const dbSelected = database.query(dbTokens, myProject.database.data)
+                        const dbSelected = database.query(dbTokens, myProject.database.data, response.response.isFindOne)
                         if (response.response.isFindOne) {
                             if (dbSelected.length === 0) {
                                 dataResponse = null
