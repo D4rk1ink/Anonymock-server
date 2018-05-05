@@ -2,6 +2,7 @@ import { Request, Response, preResponse } from '../utils/express.util';
 import { Project } from '../models/project'
 import * as utilSchema from '../utils/schema.util'
 import * as fake from '../utils/fake-data.util'
+import * as map from '../utils/map.util'
 import * as verify from './verify.controller'
 
 export const get = async (req: Request, res: Response) => {
@@ -25,10 +26,10 @@ export const generate = async (req: Request, res: Response) => {
         const { project, schema, data, count } = req.body
         try {
             utilSchema.isSchema(schema)
-            utilSchema.verify(data, schema)
             const database = Array.apply(null, Array(+count)).map(_ => {
                 const afterFakeData = fake.fake(data)
-                const afterMapData = fake.mapSchema(afterFakeData, schema)
+                const afterMapData = map.mapSchema(afterFakeData, schema)
+                utilSchema.verify(afterMapData, schema)
                 return afterMapData
             })
             await Project.update(project, {
@@ -59,12 +60,15 @@ export const importDB = async (req: Request, res: Response) => {
         try {
             utilSchema.isSchema(schema)
             if (Array.isArray(data)) {
-                for (const _ of data) {
-                    utilSchema.verify(_, schema)
-                }
+                const database = data.map(datum => {
+                    const afterFakeData = fake.fake(datum)
+                    const afterMapData = map.mapSchema(afterFakeData, schema)
+                    utilSchema.verify(afterMapData, schema)
+                    return afterMapData
+                })
                 await Project.update(project, {
                     "database.schema": schema,
-                    "database.data": data
+                    "database.data": database
                 })
                 const myProject = await Project.findById(project, 'database')
                 if (myProject) {
