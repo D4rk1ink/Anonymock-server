@@ -105,6 +105,7 @@ export const search = async (req: Request, res: Response) => {
         const endpoints = await Endpoint.search(folders, search, page, 'id method name path')
             .skip((page - 1) * 10)
             .limit(10)
+            .sort({'updatedAt': 'desc'})
         const data = {
             endpoints: endpoints,
             limitPage: Math.ceil(endpointsCount / 10)
