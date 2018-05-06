@@ -170,6 +170,7 @@ export const search = async (req: Request, res: Response) => {
         const endpoints = await ScraperEndpoint.search(scraperId, search, page, 'id method folder name path requests')
             .skip((page - 1) * 10)
             .limit(10)
+            .sort({'updatedAt': 'desc'})
         const data = {
             endpoints: endpoints,
             limitPage: Math.ceil(endpointsCount / 10)
