@@ -72,7 +72,11 @@ export const query = (conditions, db, isFindOne = false) => {
             }
             if (sections.length > 1) {
                 // filter sub data
-                nested = query([{ key: sections[1], value: condition.value }], nested)
+                if (!Array.isArray(nested)) {
+                    nested = query([{ key: sections[1], value: condition.value }], [nested])
+                } else {
+                    nested = query([{ key: sections[1], value: condition.value }], nested)
+                }
                 if (nested.length > 0) {
                     const setNest = (obj, keys, val) => {
                         if(keys.length > 0){
