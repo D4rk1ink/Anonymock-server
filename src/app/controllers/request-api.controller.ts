@@ -15,7 +15,7 @@ export const request = async (req: Request, res: Response) => {
     const method = req.method
     const myProject = await Project.findById(id)
     const myMethod = await Method.findOne({ name: method })
-    if (myProject && myMethod) {
+    if (myProject && myMethod && myProject.status) {
         const myEndpoint = await Endpoint.findByRoute(path, myMethod.id, myProject.id)
             .populate('method')
             .populate({
