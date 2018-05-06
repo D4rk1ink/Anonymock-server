@@ -118,6 +118,7 @@ export const search = async (req: Request, res: Response) => {
                 folders = await Folder.search(projectid, search, page)
                     .skip((page - 1) * 10)
                     .limit(10)
+                    .sort({'createddAt': 'desc'})
             }
             folders = folders.map(folder => {
                 return {
