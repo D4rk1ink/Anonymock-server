@@ -6,6 +6,7 @@ const routerIndex = express.Router()
 const router = express.Router()
 
 router.get('/search/log', log.search)
+router.delete('/log', log.clear)
 
 routerIndex.use('/project', auth.verify, router)
 
