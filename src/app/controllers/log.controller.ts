@@ -10,6 +10,7 @@ export const search = async (req: Request, res: Response) => {
         const logs = await Log.search(projectid, search)
             .skip((page - 1) * 20)
             .limit(20)
+            .sort({'createdAt': 'desc'})
         const data = {
             logs: logs,
             limitPage: Math.ceil(logsCount / 20)
