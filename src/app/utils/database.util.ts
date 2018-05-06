@@ -1,4 +1,4 @@
-const REGEX_TOKEN = /{{\s*\$db.([^}}\s]+)\s*}}/g
+const REGEX_TOKEN = /{{\s*\$db.([^}}]+)\s*}}/g
 
 export const hasDbToken = (template) => {
     if (typeof template !== 'string') {
@@ -59,9 +59,10 @@ export const query = (conditions, db, isFindOne = false) => {
     for (const data of db) {
         let isCorrect = false
         for (const condition of conditions) {
+            const regex_filter = /\(([^\)]*)\)$/g
             const sections = condition.key.split('$', 2)
             let nested = data
-            const keys = sections[0].replace(/^\.|\.$/g, '').split('.')
+            const keys = sections[0].replace(/^\.|\.$/g, '').split('.').map(key => key.replace(regex_filter, ''))
             for (const key of keys) {
                 if (nested[key] !== undefined) {
                     nested = nested[key]

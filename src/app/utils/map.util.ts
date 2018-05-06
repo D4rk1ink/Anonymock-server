@@ -1,12 +1,15 @@
 import * as json from './json.util'
 
+const REGEX_DB_TOKEN = /{{\s*\$db.([^}}]+)\s*}}/g
+const REGEX_ENV_TOKEN = /{{\s*\$env.([^}}\s]+)\s*}}/g
+const REGEX_PARAM_TOKEN = /{{\s*([^}}\s]+)\s*}}/g
+
 export const mapEnvironment = (template, environment) => {
     const isString = typeof template === 'string'
     if (!isString) {
         template = JSON.stringify(template)
     }
-    const regex_token = /{{\s*\$env.([^}}\s]+)\s*}}/g
-    template = template.replace(regex_token, (match, capture) => {
+    template = template.replace(REGEX_ENV_TOKEN, (match, capture) => {
         return environment[capture]
     })
     if (isString) {
@@ -30,18 +33,39 @@ export const mapDatabase = (_template, database) => {
             data[key] = mapDatabase(data[key], database)
         }
     } else if (typeof data === 'string') {
-        const regex_token = /{{\s*\$db.([^}}\s]+)\s*}}/g
-        const found = data.match(regex_token)
+        const found = data.match(REGEX_DB_TOKEN)
         if (found) {
             const tokens = found.filter((token, i) => found.indexOf(token) === i)
             for (const token of tokens) {
-                const exec = new RegExp(regex_token).exec(token)
+                const exec = new RegExp(REGEX_DB_TOKEN).exec(token)
                 if (exec) {
+                    const regex_filter = /\(([^\)]*)\)$/g
                     const keyChain = exec[1]
                     const keys = keyChain.split('.')
                     let nested = database
                     for (const key of keys) {
-                        nested = nested[key]
+                        nested = nested[key.replace(regex_filter, '')]
+                        if (regex_filter.test(key)) {
+                            const exec = new RegExp(regex_filter).exec(key)
+                            if (exec) {
+                                try {
+                                    const filter = (data, keys) => {
+                                        const temp = {}
+                                        for (const key of keys) {
+                                            temp[key] = data[key]
+                                        }
+                                        return temp
+                                    }
+                                    const filterKeys = JSON.parse(`[${exec[1]}]`.replace(/\'/g, `"`))
+                                    if (Array.isArray(nested)) {
+                                        nested = nested.map(data => filter(data, filterKeys))
+                                    } else {
+                                        
+                                        nested = filter(nested, filterKeys)
+                                    }
+                                } catch (err) {}
+                            }
+                        }
                     }
                     if (found.length === 1 && typeof nested === 'object') {
                         data = json.clone(nested)
@@ -60,8 +84,7 @@ export const mapParams = (template, params) => {
     if (!isString) {
         template = JSON.stringify(template)
     }
-    const regex_token = /{{\s*([^}}\s]+)\s*}}/g
-    template = template.replace(regex_token, (match, capture) => {
+    template = template.replace(REGEX_PARAM_TOKEN, (match, capture) => {
         return params[capture]
     })
     if (isString) {
