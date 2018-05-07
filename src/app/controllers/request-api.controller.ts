@@ -24,6 +24,7 @@ export const request = async (req: Request, res: Response) => {
             })
         if (myEndpoint) {
             const params = getParamsFromPath(path, myEndpoint.path)
+            let defaultResponse: any = null
             let dataResponse: any = null
             for (const response of myEndpoint.responses) {
                 response.condition.params = map.mapEnvironment(response.condition.params, myProject.environments)
@@ -39,7 +40,6 @@ export const request = async (req: Request, res: Response) => {
                 const extractParamsDbToken = database.extractDbToken(params, response.condition.params)
                 const extractHeadersDbToken = database.extractDbToken(req.headers, response.condition.headers)
                 const extractQueryStringDbToken = database.extractDbToken(req.query, response.condition.queryString)
-
                 let extractBodyDbToken = []
                 if (method !== 'GET') {
                     extractBodyDbToken = database.extractDbToken(req.body, response.condition.body)
@@ -55,15 +55,16 @@ export const request = async (req: Request, res: Response) => {
                     dataResponse.headers = response.response.headers
                     dataResponse.statusCode = response.response.statusCode
                     dataResponse.delay = response.response.delay
+                    
                     if (dbTokens.length > 0) {
                         const dbSelected = database.query(dbTokens, myProject.database.data, response.response.isFindOne)
                         if (response.response.isFindOne) {
                             if (dbSelected.length === 0) {
                                 dataResponse = null
-                                continue
+                            } else {
+                                dataResponse.headers = map.mapDatabase(response.response.headers, dbSelected[0])
+                                dataResponse.body = map.mapDatabase(response.response.body, dbSelected[0])
                             }
-                            dataResponse.headers = map.mapDatabase(response.response.headers, dbSelected[0])
-                            dataResponse.body = map.mapDatabase(response.response.body, dbSelected[0])
                         } else {
                             dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
                         }
@@ -75,18 +76,22 @@ export const request = async (req: Request, res: Response) => {
                             dataResponse.body = response.response.body
                         }
                     }
+                }
+                if (response.isDefault) {
+                    defaultResponse = {}
+                    defaultResponse.body = response.response.body
+                    defaultResponse.headers = response.response.headers
+                    defaultResponse.statusCode = response.response.statusCode
+                    defaultResponse.delay = response.response.delay
+                }
+                if (dataResponse) {
                     break
-                } else {
-                    if (response.isDefault) {
-                        dataResponse = {}
-                        dataResponse.body = response.response.body
-                        dataResponse.headers = response.response.hedaers
-                        dataResponse.statusCode = response.response.statusCode
-                        dataResponse.delay = response.response.delay
-                    }
                 }
             }
-            if (dataResponse) {
+            if (dataResponse || defaultResponse) {
+                if (!dataResponse) {
+                    dataResponse = defaultResponse
+                }
                 dataResponse.body = fake.fake(dataResponse.body)
                 dataResponse.headers = fake.fake(dataResponse.headers)
                 setTimeout(async () => {
