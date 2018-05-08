@@ -297,6 +297,9 @@ export const scrapEndpoint = async (endpoint, project, mainData, cb) => {
                 headers: headers
             }
             getResponse(http, async (err, res, body) => {
+                if (typeof body === 'string') {
+                    body = JSON.parse(body)
+                }
                 const newResponse = await ResponseModel.create({
                     name: myRequest.name,
                     environment: 'dev',
