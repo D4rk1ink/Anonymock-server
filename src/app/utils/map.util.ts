@@ -113,7 +113,6 @@ export const mapSchema = (data, schema) => {
                 data[key] = JSON.parse(data[key])
                 break
             case 'Array':
-                data[key] = JSON.parse(data[key])
                 break
             case 'Object':
                 data[key] = JSON.parse(data[key])

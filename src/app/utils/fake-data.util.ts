@@ -13,12 +13,25 @@ export const fake = (_data) => {
         }
     } else if (typeof data === 'object') {
         for (const key in data) {
-            if (/\<\d+\>$/.test(key) && data[key] instanceof Array) {
-                const numberExec = /\<(\d+)\>$/.exec(key)
-                const number = numberExec ? +numberExec[1] : 0
+            if (/\<\d+(?:,\d+)?\>$/.test(key) && data[key] instanceof Array) {
+                const numberExec = /\<(\d+)(?:,(\d+))?\>$/.exec(key)
+                let number = 0
+                if (numberExec) {
+                    if (numberExec[1] !== undefined && numberExec[2] !== undefined) {
+                        let max = +numberExec[1]
+                        let min = +numberExec[2]
+                        if (numberExec[1] < numberExec[2]) {
+                            max = +numberExec[2]
+                            min = +numberExec[1]
+                        }
+                        number = Math.floor(Math.random() * (max - min) + min)
+                    } else {
+                        number = +numberExec[1]
+                    }
+                }
                 const baseData = data[key].length > 1 ? data[key] : data[key].length > 0 ? data[key][0] : []
                 const arr = Array.apply(null, Array(number)).map((i) => baseData)
-                const newKey = key.replace(/\<\d+\>$/, '')
+                const newKey = key.replace(/\<\d+(?:,\d+)?\>$/, '')
                 data[newKey] = fake(arr)
                 delete data[key]
             } else {
