@@ -1,5 +1,7 @@
-import * as casual from 'casual'
 import { genIdCard } from './id-card'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as casual from 'casual'
 import * as encrypt from '../utils/encrypt.util'
 import * as json from '../utils/json.util'
 
@@ -56,6 +58,8 @@ export const generateData = (text) => {
                 return casual.domain
             case 'url':
                 return casual.url
+            case 'avatar':
+                return avatar()
             default:
                 const valIdCard = idCard(capture)
                 const valPhoneNumber = phoneNumber(capture)
@@ -139,4 +143,11 @@ const date = (capture) => {
         return new Date().getTime()
     }
     return null
+}
+
+const avatar = () => {
+    const avatarsPath = path.join(__dirname, '../images/avatars/')
+    const avatars = fs.readdirSync(avatarsPath)
+    const avatar = fs.readFileSync(avatarsPath + avatars[Math.floor(Math.random()*avatars.length)], 'base64')
+    return `data:image/png;base64,${avatar}`
 }
