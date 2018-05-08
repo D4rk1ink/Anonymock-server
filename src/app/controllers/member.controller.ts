@@ -9,7 +9,7 @@ export const add = async (req: Request, res: Response) => {
             const { project, user } = req.body
             const findUser = await User.findById(user)
             const findProject = await Project.findById(project)
-            if (findUser && findProject) {
+            if (findUser && findProject && findUser.isApproved) {
                 const member = {
                     user,
                     isManager: false
@@ -110,7 +110,8 @@ export const searchUser = async (req: Request, res: Response) => {
         try {
             const { project, search } = req.query
             const searchText = search.toString().trim()
-            const users = (await User.searchUser(searchText, 5, 'id firstname lastname projects'))
+            const users = (await User.searchUser(searchText, 5, 'id firstname lastname projects isApproved'))
+                .filter(user => user.isApproved)
                 .map(user => {
                     return {
                         id: user.id,
