@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as auth from '../controllers/auth.controller'
 import * as endpoint from '../controllers/endpoint.controller'
+import * as verify from '../controllers/verify.controller'
 
 const routerIndex = express.Router()
 const router = express.Router()
@@ -11,6 +12,6 @@ router.patch('/endpoint/:id', endpoint.update)
 router.get('/search/endpoint', endpoint.search)
 router.delete('/endpoint/:id', endpoint.deleteEndpoint)
 
-routerIndex.use('/project', auth.verify, router)
+routerIndex.use('/project', auth.verify, verify.lowLevel, router)
 
 export default routerIndex

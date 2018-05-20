@@ -4,15 +4,9 @@ import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
 
 export const search = async (req: Request, res: Response) => {
-    if (await verify.verifyAdmin(req, res)) {
-        const { search } = req.query
-        const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
-        res.json(preResponse.data(users))
-    } else {
-        res
-            .status(401)
-            .json(preResponse.error(null, 'Unauth'))
-    }
+    const { search } = req.query
+    const users = await User.searchUser(search, 0, 'id firstname lastname isAdmin isApproved deactivated')
+    res.json(preResponse.data(users))
 }
 
 export const getById = async (req: Request, res: Response) => {
@@ -90,7 +84,6 @@ export const update = async (req: Request, res: Response) => {
 
 export const approve = async (req: Request, res: Response) => {
     const id = req.params.id
-    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
         try {
             const { approve } = req.body
             const user = await User.findById(id)
@@ -109,44 +102,27 @@ export const approve = async (req: Request, res: Response) => {
         } catch (err) {
             res.json(preResponse.error(null, 'Approve fail'))
         }
-    } else {
-        res
-            .status(401)
-            .json(preResponse.error(null, 'Unauth'))
-    }
 }
 
 export const admin = async (req: Request, res: Response) => {
-    const id = req.params.id
-    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
-        try {
-            const { isAdmin } = req.body
-            const user = await User.update(id, { isAdmin: isAdmin })
-            res.json(preResponse.data('Successfully'))
-        } catch (err) {
-            res.json(preResponse.error(null, 'Update Admin fail'))
-        }
-    } else {
-        res
-            .status(401)
-            .json(preResponse.error(null, 'Unauth'))
+    try {
+        const id = req.params.id
+        const { isAdmin } = req.body
+        const user = await User.update(id, { isAdmin: isAdmin })
+        res.json(preResponse.data('Successfully'))
+    } catch (err) {
+        res.json(preResponse.error(null, 'Update Admin fail'))
     }
 }
 
 export const deactivate = async (req: Request, res: Response) => {
-    const id = req.params.id
-    if (await verify.verifyAdmin(req, res) || !await verify.verifyMyself(id, req)) {
-        try {
-            const { deactivated } = req.body
-            const user = await User.update(id, { deactivated: deactivated })
-            res.json(preResponse.data('Successfully'))
-        } catch (err) {
-            res.json(preResponse.error(null, 'Update Deactivated fail'))
-        }
-    } else {
-        res
-            .status(401)
-            .json(preResponse.error(null, 'Unauth'))
+    try {
+        const id = req.params.id
+        const { deactivated } = req.body
+        const user = await User.update(id, { deactivated: deactivated })
+        res.json(preResponse.data('Successfully'))
+    } catch (err) {
+        res.json(preResponse.error(null, 'Update Deactivated fail'))
     }
 }
 

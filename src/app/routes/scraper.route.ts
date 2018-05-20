@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as auth from '../controllers/auth.controller'
 import * as scraper from '../controllers/scraper.controller'
+import * as verify from '../controllers/verify.controller'
 
 const routerIndex = express.Router()
 const router = express.Router()
@@ -16,6 +17,6 @@ router.patch('/scraper/request/:id/default', scraper.setDefault)
 router.delete('/scraper/request/:id', scraper.deleteRequest)
 router.delete('/scraper/endpoint/:id', scraper.deleteEndpoint)
 
-routerIndex.use('/project', auth.verify, router)
+routerIndex.use('/project', auth.verify, verify.lowLevel, router)
 
 export default routerIndex
