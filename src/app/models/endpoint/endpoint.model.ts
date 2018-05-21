@@ -12,28 +12,32 @@ interface IEndpointModel extends Document {
     responses: any[]
 }
 
-const EndpointModel = model<IEndpointModel>('Endpoint', EndpointSchema)
-
 export class Endpoint {
 
+    static Model: Model<IEndpointModel>
+
+    static createModel () {
+        this.Model = model<IEndpointModel>('Endpoint', EndpointSchema)
+    }
+
     static getModel () {
-        return EndpointModel
+        return this.Model
     }
 
     static async create (newEndpoint) {
-        return new EndpointModel(newEndpoint).save()
+        return new this.Model(newEndpoint).save()
     }
 
     static async update (id, update) {
-        return await EndpointModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await EndpointModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await EndpointModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
             .populate('method', 'id name')
             .populate('folder', 'id name')
     }
@@ -44,25 +48,25 @@ export class Endpoint {
         if (path.substring(0, 1) !== '/') {
             path = '/' + path
         }
-        return EndpointModel.findOne({ project: project, method: method, _id: { $ne: except },
+        return this.Model.findOne({ project: project, method: method, _id: { $ne: except },
             $where: `new RegExp("^"+this.path.replace(${paramPattern}, '([A-Za-z0-9]+|[^\/]+)')+"$").test("${path}")`
         })
     }
 
     static async findOne (condition) {
-        return await EndpointModel.findOne(condition)
+        return await this.Model.findOne(condition)
             .populate('method', 'id name')
             .populate('folder', 'id name')
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await EndpointModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
             .populate('method', 'id name')
             .populate('folder', 'id name')
     }
 
     static search (folders, search, page, fields = '') {
-        return EndpointModel.find({
+        return this.Model.find({
             $and: [{
                 folder: { $in: folders }
             }, { $or: [

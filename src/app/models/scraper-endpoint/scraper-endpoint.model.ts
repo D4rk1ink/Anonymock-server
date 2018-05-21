@@ -12,43 +12,47 @@ interface IScraperEndpointModel extends Document {
     scraper: string
 }
 
-const ScraperEndpointModel = model<IScraperEndpointModel>('ScraperEndpoint', ScraperEndpointSchema)
-
 export class ScraperEndpoint {
 
+    static Model: Model<IScraperEndpointModel>
+
+    static createModel () {
+        this.Model = model<IScraperEndpointModel>('ScraperEndpoint', ScraperEndpointSchema)
+    }
+
     static getModel () {
-        return ScraperEndpointModel
+        return this.Model
     }
 
     static async create (newScraperEndpoint) {
-        return new ScraperEndpointModel(newScraperEndpoint).save()
+        return new this.Model(newScraperEndpoint).save()
     }
 
     static async update (id, update) {
-        return await ScraperEndpointModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await ScraperEndpointModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await ScraperEndpointModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
             .populate('method', 'id name')
     }
 
     static async findOne (condition) {
-        return await ScraperEndpointModel.findOne(condition)
+        return await this.Model.findOne(condition)
             .populate('method', 'id name')
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await ScraperEndpointModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
             .populate('method', 'id name')
     }
 
     static search (scraper, search, page, fields = '') {
-        return ScraperEndpointModel.find({
+        return this.Model.find({
             $and: [{
                 scraper: scraper
             }, { $or: [

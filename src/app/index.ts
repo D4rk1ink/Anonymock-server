@@ -13,10 +13,11 @@ export class Server {
 
     constructor () {
         this.app = express()
+        this.start()
     }
 
     public static bootstrap () {
-        new Server().start()
+        return new Server()
     }
 
     public config () {
@@ -32,6 +33,7 @@ export class Server {
                 console.log('Failed to connect to database')
             } else {
                 console.log('Connect to database')
+                initDB.createModels()
                 initDB.createUsers()
                 initDB.createMethods()
             }
@@ -52,7 +54,6 @@ export class Server {
             routes.endpoint,
             routes.response,
             routes.log,
-            routes.position,
             routes.api,
         ])
         this.app.use(express.static(path.join(__dirname, '../public')))

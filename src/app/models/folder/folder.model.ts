@@ -8,39 +8,43 @@ interface IFolderModel extends Document {
     project: string
 }
 
-const FolderModel = model<IFolderModel>('Folder', FolderSchema)
-
 export class Folder {
 
+    static Model: Model<IFolderModel>
+
+    static createModel () {
+        this.Model = model<IFolderModel>('Folder', FolderSchema)
+    }
+
     static getModel () {
-        return FolderModel
+        return this.Model
     }
 
     static async create (newFolder) {
-        return new FolderModel(newFolder).save()
+        return new this.Model(newFolder).save()
     }
 
     static async update (id, update) {
-        return await FolderModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await FolderModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await FolderModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition) {
-        return await  FolderModel.findOne(condition)
+        return await  this.Model.findOne(condition)
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await FolderModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
     }
 
     static search (project, search, page, fields = '') {
-        return FolderModel.find({ project: project, name: new RegExp(search, 'i') }, fields)
+        return this.Model.find({ project: project, name: new RegExp(search, 'i') }, fields)
     }
 }

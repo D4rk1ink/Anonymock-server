@@ -1,6 +1,13 @@
 import { User } from '../models/user'
-import { ProjectPosition } from '../models/project-position'
+import { Project } from '../models/project'
 import { Method } from '../models/method'
+import { Endpoint } from '../models/endpoint'
+import { Response } from '../models/response'
+import { Scraper } from '../models/scraper'
+import { ScraperEndpoint } from '../models/scraper-endpoint'
+import { ScraperRequest } from '../models/scraper-request'
+import { Folder } from '../models/folder'
+import { Log } from '../models/log'
 import * as constants from '../constants'
 
 const staticUsers = [
@@ -13,15 +20,6 @@ const staticUsers = [
         password: constants.INIT_PASSWORD.toString(),
         isAdmin: true,
         isApproved: true
-    }
-]
-
-const staticProjectPositions = [
-    {
-        name: 'Manager'
-    },
-    {
-        name: 'Normal'
     }
 ]
 
@@ -43,13 +41,26 @@ const staticMethods = [
     }
 ]
 
+export const createModels = async () => {
+    User.createModel()
+    Project.createModel()
+    Method.createModel()
+    Project.createModel()
+    Endpoint.createModel()
+    Response.createModel()
+    Scraper.createModel()
+    ScraperEndpoint.createModel()
+    ScraperRequest.createModel()
+    Folder.createModel()
+    Log.createModel()
+}
+
 export const createUsers = async () => {
     for (const user of staticUsers) {
         try {
-            await User.create(user)
-        } catch (err) {
-            console.log(err)
-        }
+            const UserModel = User.getModel()
+            await new UserModel(user).save()
+        } catch (err) { }
     }
 }
 
@@ -59,19 +70,6 @@ export const createMethods = async () => {
         for (const method of staticMethods) {
             try {
                 await Method.create(method)
-            } catch (err) {
-                console.log(err)
-            }
-        }
-    }
-}
-
-export const createProjectPositions = async () => {
-    const projectPositions = await ProjectPosition.findAll()
-    if (projectPositions.length === 0) {
-        for (const position of staticProjectPositions) {
-            try {
-                await ProjectPosition.create(position)
             } catch (err) {
                 console.log(err)
             }

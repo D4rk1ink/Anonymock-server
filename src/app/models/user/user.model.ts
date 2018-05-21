@@ -1,6 +1,7 @@
 import { Model, Document, model, Error } from 'mongoose'
 import UserSchema from './user.schema'
 import { Project } from '../project'
+import * as constants from '../../constants'
 
 interface IUserModel extends Document {
     firstname: string
@@ -15,45 +16,56 @@ interface IUserModel extends Document {
     projects: any[]
 }
 
-const UserModel = model<IUserModel>('User', UserSchema)
-
 export class User {
 
+    static Model: Model<IUserModel>
+
+    static createModel () {
+        this.Model = model<IUserModel>('User', UserSchema)
+    }
+
     static getModel () {
-        return UserModel
+        return this.Model
     }
 
     static async create (newUser) {
-        const user = await UserModel.findOne({ username: newUser.username, email: newUser.email })
-        if (user) {
-            return new Error('Email is duplicate')
-        } else {
-            return new UserModel(newUser).save()
+        const data = {
+            firstname: newUser.firstname,
+            lastname: newUser.lastname,
+            username: newUser.username,
+            email: newUser.email,
+            password: newUser.password,
+            picture: constants.DEFAULT_PROFILE_PICTURE,
+        }
+        try {
+            return new this.Model(data).save()
+        } catch (err) {
+            return new Error('Email or username is duplicate')
         }
     }
 
     static async update (id, update) {
-        return await UserModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        await UserModel.findByIdAndRemove(id)
+        await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await UserModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition) {
-        return await  UserModel.findOne(condition)
+        return await  this.Model.findOne(condition)
     }
 
     static findAll (condition = {}, fields = '') {
-        return UserModel.find(condition, fields)
+        return this.Model.find(condition, fields)
     }
 
     static async searchProjectMembers (project, search, fields = '') {
-        // return await UserModel.find({
+        // return await this.Model.find({
         //     $and: [
         //         { projects: project},
         //         { $where: `new RegExp("${search}", "gi").test(this.firstname + " " + this.lastname)` }
@@ -71,7 +83,7 @@ export class User {
     }
 
     static async searchUser (search, limit, fields = '') {
-        return await UserModel.find({ $where: `new RegExp("${search}", "gi").test(this.firstname + " " + this.lastname)` }, fields)
+        return await this.Model.find({ $where: `new RegExp("${search}", "gi").test(this.firstname + " " + this.lastname)` }, fields)
             .limit(limit)
     }
 }

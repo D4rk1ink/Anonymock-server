@@ -21,36 +21,40 @@ interface ILogModel extends Document {
     createdAt: string
 }
 
-const LogModel = model<ILogModel>('Log', LogSchema)
-
 export class Log {
 
+    static Model: Model<ILogModel>
+
+    static createModel () {
+        this.Model = model<ILogModel>('Log', LogSchema)
+    }
+
     static getModel () {
-        return LogModel
+        return this.Model
     }
 
     static async create (newLog) {
-        return new LogModel(newLog).save()
+        return new this.Model(newLog).save()
     }
 
     static async remove (id) {
-        return await LogModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await LogModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition) {
-        return await  LogModel.findOne(condition)
+        return await  this.Model.findOne(condition)
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await LogModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
     }
 
     static search (project, search, fields = '') {
-        return LogModel.find({ project: project, path: new RegExp(search, 'i') }, fields)
+        return this.Model.find({ project: project, path: new RegExp(search, 'i') }, fields)
             .populate('method')
     }
 }

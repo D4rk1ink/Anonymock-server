@@ -9,7 +9,6 @@ import scraper from './scraper.route'
 import endpoint from './endpoint.route'
 import response from './response.route'
 import log from './log.route'
-import position from './project-position.route'
 import api from './request-api.route'
 
 export {
@@ -24,6 +23,5 @@ export {
     endpoint,
     response,
     log,
-    position,
     api
 }

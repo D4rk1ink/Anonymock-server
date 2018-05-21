@@ -23,40 +23,44 @@ interface IResponseModel extends Document {
     endpoint: string
 }
 
-const ResponseModel = model<IResponseModel>('Response', ResponseSchema)
-
 export class Response {
 
+    static Model: Model<IResponseModel>
+
+    static createModel () {
+        this.Model = model<IResponseModel>('Response', ResponseSchema)
+    }
+
     static getModel () {
-        return ResponseModel
+        return this.Model
     }
 
     static async create (newResponse) {
-        return new ResponseModel(newResponse).save()
+        return new this.Model(newResponse).save()
     }
 
     static async update (id, update) {
-        return await ResponseModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await ResponseModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await ResponseModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition) {
-        return await ResponseModel.findOne(condition)
+        return await this.Model.findOne(condition)
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await ResponseModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
     }
 
     static async search (endpoint, search, environment, fields = '') {
-        return await ResponseModel.find({ endpoint: endpoint, environment: environment, name: new RegExp(search, 'gi') }, fields)
+        return await this.Model.find({ endpoint: endpoint, environment: environment, name: new RegExp(search, 'gi') }, fields)
             .sort({'updatedAt': 'desc'})
     }
 }

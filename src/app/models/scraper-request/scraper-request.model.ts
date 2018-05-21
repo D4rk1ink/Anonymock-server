@@ -16,36 +16,40 @@ interface IScraperRequestModel extends Document {
     endpoint: string
 }
 
-const ScraperRequestModel = model<IScraperRequestModel>('ScraperRequest', ScraperRequestSchema)
-
 export class ScraperRequest {
 
+    static Model: Model<IScraperRequestModel>
+
+    static createModel () {
+        this.Model = model<IScraperRequestModel>('ScraperRequest', ScraperRequestSchema)
+    }
+
     static getModel () {
-        return ScraperRequestModel
+        return this.Model
     }
 
     static async create (newRequest) {
-        return new ScraperRequestModel(newRequest).save()
+        return new this.Model(newRequest).save()
     }
 
     static async update (id, update) {
-        return await ScraperRequestModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await ScraperRequestModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await ScraperRequestModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition) {
-        return await ScraperRequestModel.findOne(condition)
+        return await this.Model.findOne(condition)
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await ScraperRequestModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
     }
 
 }

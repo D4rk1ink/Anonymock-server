@@ -13,35 +13,39 @@ interface IProjectModel extends Document {
     members: any[]
 }
 
-const ProjectModel = model<IProjectModel>('Project', ProjectSchema)
-
 export class Project {
 
+    static Model: Model<IProjectModel>
+
+    static createModel () {
+        this.Model = model<IProjectModel>('Project', ProjectSchema)
+    }
+
     static getModel () {
-        return ProjectModel
+        return this.Model
     }
 
     static async create (newProject) {
-        return new ProjectModel(newProject).save()
+        return new this.Model(newProject).save()
     }
 
     static async update (id, update) {
-        return await ProjectModel.findByIdAndUpdate(id, update)
+        return await this.Model.findByIdAndUpdate(id, update)
     }
 
     static async remove (id) {
-        return await ProjectModel.findByIdAndRemove(id)
+        return await this.Model.findByIdAndRemove(id)
     }
 
     static async findById (id, fields = '') {
-        return await ProjectModel.findById(id, fields)
+        return await this.Model.findById(id, fields)
     }
 
     static async findOne (condition, fields = '') {
-        return await  ProjectModel.findOne(condition, fields)
+        return await  this.Model.findOne(condition, fields)
     }
 
     static async findAll (condition = {}, fields = '') {
-        return await ProjectModel.find(condition, fields)
+        return await this.Model.find(condition, fields)
     }
 }
