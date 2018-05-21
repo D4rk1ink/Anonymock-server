@@ -10,7 +10,11 @@ export class Method {
     static Model: Model<IMethodModel>
 
     static createModel () {
-        this.Model = model<IMethodModel>('Method', MethodSchema)
+        try {
+            this.Model = model<IMethodModel>('Method', MethodSchema)
+        } catch (err) {
+            this.Model = model<IMethodModel>('Method')
+        }
     }
 
     static getModel () {

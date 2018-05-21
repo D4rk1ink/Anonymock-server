@@ -17,7 +17,11 @@ export class ScraperEndpoint {
     static Model: Model<IScraperEndpointModel>
 
     static createModel () {
-        this.Model = model<IScraperEndpointModel>('ScraperEndpoint', ScraperEndpointSchema)
+        try {
+            this.Model = model<IScraperEndpointModel>('ScraperEndpoint', ScraperEndpointSchema)
+        } catch (err) {
+            this.Model = model<IScraperEndpointModel>('ScraperEndpoint')
+        }
     }
 
     static getModel () {

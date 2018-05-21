@@ -28,7 +28,11 @@ export class Response {
     static Model: Model<IResponseModel>
 
     static createModel () {
-        this.Model = model<IResponseModel>('Response', ResponseSchema)
+        try {
+            this.Model = model<IResponseModel>('Response', ResponseSchema)
+        } catch (err) {
+            this.Model = model<IResponseModel>('Response')
+        }
     }
 
     static getModel () {

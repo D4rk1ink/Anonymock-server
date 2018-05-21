@@ -26,7 +26,11 @@ export class Log {
     static Model: Model<ILogModel>
 
     static createModel () {
-        this.Model = model<ILogModel>('Log', LogSchema)
+        try {
+            this.Model = model<ILogModel>('Log', LogSchema)
+        } catch (err) {
+            this.Model = model<ILogModel>('Log')
+        }
     }
 
     static getModel () {

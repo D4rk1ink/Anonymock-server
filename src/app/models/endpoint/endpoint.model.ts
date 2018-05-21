@@ -17,7 +17,11 @@ export class Endpoint {
     static Model: Model<IEndpointModel>
 
     static createModel () {
-        this.Model = model<IEndpointModel>('Endpoint', EndpointSchema)
+        try {
+            this.Model = model<IEndpointModel>('Endpoint', EndpointSchema)
+        } catch (err) {
+            this.Model = model<IEndpointModel>('Endpoint')
+        }
     }
 
     static getModel () {

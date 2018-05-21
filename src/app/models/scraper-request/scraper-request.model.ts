@@ -21,7 +21,11 @@ export class ScraperRequest {
     static Model: Model<IScraperRequestModel>
 
     static createModel () {
-        this.Model = model<IScraperRequestModel>('ScraperRequest', ScraperRequestSchema)
+        try {
+            this.Model = model<IScraperRequestModel>('ScraperRequest', ScraperRequestSchema)
+        } catch (err) {
+            this.Model = model<IScraperRequestModel>('ScraperRequest')
+        }
     }
 
     static getModel () {

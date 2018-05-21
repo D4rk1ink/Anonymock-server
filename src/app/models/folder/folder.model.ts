@@ -13,7 +13,11 @@ export class Folder {
     static Model: Model<IFolderModel>
 
     static createModel () {
-        this.Model = model<IFolderModel>('Folder', FolderSchema)
+        try {
+            this.Model = model<IFolderModel>('Folder', FolderSchema)
+        } catch (err) {
+            this.Model = model<IFolderModel>('Folder')
+        }
     }
 
     static getModel () {

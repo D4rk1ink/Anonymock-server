@@ -21,7 +21,11 @@ export class User {
     static Model: Model<IUserModel>
 
     static createModel () {
-        this.Model = model<IUserModel>('User', UserSchema)
+        try {
+            this.Model = model<IUserModel>('User', UserSchema)
+        } catch (err) {
+            this.Model = model<IUserModel>('User')
+        }
     }
 
     static getModel () {

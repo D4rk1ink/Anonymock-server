@@ -18,7 +18,11 @@ export class Project {
     static Model: Model<IProjectModel>
 
     static createModel () {
-        this.Model = model<IProjectModel>('Project', ProjectSchema)
+        try {
+            this.Model = model<IProjectModel>('Project', ProjectSchema)
+        } catch (err) {
+            this.Model = model<IProjectModel>('Project')
+        }
     }
 
     static getModel () {
