@@ -42,9 +42,13 @@ export class User {
             picture: constants.DEFAULT_PROFILE_PICTURE,
         }
         try {
-            return new this.Model(data).save()
+            const createUser = await new this.Model(data).save()
+            return {
+                username: createUser.username,
+                email: createUser.email
+            }
         } catch (err) {
-            return new Error('Email or username is duplicate')
+            throw new Error('Email or username is duplicate')
         }
     }
 

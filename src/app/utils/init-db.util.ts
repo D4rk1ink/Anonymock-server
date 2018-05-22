@@ -69,10 +69,9 @@ export const createMethods = async () => {
     if (methods.length === 0) {
         for (const method of staticMethods) {
             try {
-                await Method.create(method)
-            } catch (err) {
-                console.log(err)
-            }
+                const MethodModel = Method.getModel()
+                await new MethodModel(method).save()
+            } catch (err) { }
         }
     }
 }

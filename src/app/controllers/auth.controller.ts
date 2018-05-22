@@ -32,16 +32,8 @@ export const signin = async (req: Request, res: Response) => {
 }
 
 export const signup = async (req: Request, res: Response) => {
-    const { firstname, lastname, username, email, password } = req.body
     try {
-        const user = await User.create({
-            firstname,
-            lastname,
-            username,
-            email,
-            password,
-            picture: constants.DEFAULT_PROFILE_PICTURE,
-        })
+        const user = await User.create(req.body)
         res.json(preResponse.data(user))
     } catch (err) {
         res.json(preResponse.error(null, 'Invalid username or email'))
