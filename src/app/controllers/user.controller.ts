@@ -1,5 +1,6 @@
 import { Request, Response, preResponse } from '../utils/express.util'
 import { User } from '../models/user'
+import * as encrypt from '../utils/encrypt.util'
 import * as verify from './verify.controller'
 
 export const search = async (req: Request, res: Response) => {
@@ -141,6 +142,28 @@ export const deactivate = async (req: Request, res: Response) => {
             res.json(preResponse.data('Successfully'))
         } catch (err) {
             res.json(preResponse.error(null, 'Update Deactivated fail'))
+        }
+    } else {
+        res
+            .status(401)
+            .json(preResponse.error(null, 'Unauth'))
+    }
+}
+
+export const changePassword = async (req: Request, res: Response) => {
+    const id = req.params.id
+    if (await verify.verifyMyself(id, req)) {
+        try {
+            const myUser = await User.findById(id, 'password')
+            const { newPassword, oldPassword } = req.body
+            if (myUser && encrypt.compare(oldPassword, myUser.password)) {
+                await User.update(id, { password: newPassword })
+                res.json(preResponse.data('Successfully'))
+            } else {
+                res.json(preResponse.error(null, 'Password incorrect'))
+            }
+        } catch (err) {
+            res.json(preResponse.error(null, 'Change password fail'))
         }
     } else {
         res

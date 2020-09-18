@@ -39,7 +39,8 @@ export const signup = async (req: Request, res: Response) => {
             lastname,
             username,
             email,
-            password
+            password,
+            picture: constants.DEFAULT_PROFILE_PICTURE,
         })
         res.json(preResponse.data(user))
     } catch (err) {
@@ -55,7 +56,9 @@ export const verify =  async (req: Request, res: Response, next: NextFunction) =
             req.certificate = cert
             next()
         } catch (err) {
-            res.json(preResponse.error(null, err.message))
+            res
+                .status(401)
+                .json(preResponse.error(null, err.message))
         }
     } else {
         res

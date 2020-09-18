@@ -57,6 +57,7 @@ export const createEndpoint = async (req: Request, res: Response) => {
                     folder: myFolder.id,
                     scraper: myScraper.id
                 })
+                endpoint.folder = myFolder
                 endpoint.method = myMethod
                 await Scraper.update(myScraper.id, { $push: { endpoints: endpoint.id }})
                 res.json(preResponse.data(endpoint))
@@ -169,6 +170,7 @@ export const search = async (req: Request, res: Response) => {
         const endpoints = await ScraperEndpoint.search(scraperId, search, page, 'id method folder name path requests')
             .skip((page - 1) * 10)
             .limit(10)
+            .sort({'updatedAt': 'desc'})
         const data = {
             endpoints: endpoints,
             limitPage: Math.ceil(endpointsCount / 10)
@@ -295,6 +297,9 @@ export const scrapEndpoint = async (endpoint, project, mainData, cb) => {
                 headers: headers
             }
             getResponse(http, async (err, res, body) => {
+                if (typeof body === 'string') {
+                    body = JSON.parse(body)
+                }
                 const newResponse = await ResponseModel.create({
                     name: myRequest.name,
                     environment: 'dev',

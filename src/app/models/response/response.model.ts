@@ -57,5 +57,6 @@ export class Response {
 
     static async search (endpoint, search, environment, fields = '') {
         return await ResponseModel.find({ endpoint: endpoint, environment: environment, name: new RegExp(search, 'gi') }, fields)
+            .sort({'updatedAt': 'desc'})
     }
 }

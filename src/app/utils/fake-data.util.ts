@@ -1,7 +1,51 @@
+import { genIdCard } from './id-card'
+import * as fs from 'fs'
+import * as path from 'path'
 import * as casual from 'casual'
 import * as encrypt from '../utils/encrypt.util'
+import * as json from '../utils/json.util'
 
-export const fake = (text) => {
+export const fake = (_data) => {
+    let data = json.clone(_data)
+    if (data instanceof Array) {
+        for (const [i, datum] of data.entries()) {
+            data[i] = fake(datum)
+        }
+    } else if (typeof data === 'object') {
+        for (const key in data) {
+            if (/\<\d+(?:,\d+)?\>$/.test(key) && data[key] instanceof Array) {
+                const numberExec = /\<(\d+)(?:,(\d+))?\>$/.exec(key)
+                let number = 0
+                if (numberExec) {
+                    if (numberExec[1] !== undefined && numberExec[2] !== undefined) {
+                        let max = +numberExec[1]
+                        let min = +numberExec[2]
+                        if (numberExec[1] < numberExec[2]) {
+                            max = +numberExec[2]
+                            min = +numberExec[1]
+                        }
+                        number = Math.floor(Math.random() * (max - min) + min)
+                    } else {
+                        number = +numberExec[1]
+                    }
+                }
+                const baseData = data[key].length > 1 ? data[key] : data[key].length > 0 ? data[key][0] : []
+                const arr = Array.apply(null, Array(number)).map((i) => baseData)
+                const newKey = key.replace(/\<\d+(?:,\d+)?\>$/, '')
+                data[newKey] = fake(arr)
+                delete data[key]
+            } else {
+                data[key] = fake(data[key])
+            }
+        }
+    } else if (typeof data === 'string') {
+        data = generateData(data)
+    }
+    
+    return data
+}
+
+export const generateData = (text) => {
     const regex_token = /{{\s*([^}}\s]+)\s*}}/g
     text = text.replace(regex_token, (match, capture) => {
         switch (capture) {
@@ -27,10 +71,18 @@ export const fake = (text) => {
                 return casual.domain
             case 'url':
                 return casual.url
+            case 'avatar':
+                return avatar()
             default:
+                const valIdCard = idCard(capture)
+                const valPhoneNumber = phoneNumber(capture)
                 const valRandom = random(capture)
                 const valDate = date(capture)
-                if (valRandom !== null) {
+                if (valIdCard !== null) {
+                    return valIdCard
+                } else if (valPhoneNumber !== null) {
+                    return valPhoneNumber
+                } else if (valRandom !== null) {
                     return valRandom
                 } else if (valDate !== null) {
                     return valDate
@@ -41,44 +93,40 @@ export const fake = (text) => {
     return text
 }
 
-export const mapSchema = (data, schema) => {
-    if (typeof schema === 'string') {
-        schema = JSON.parse(schema)
-    }
-    if (typeof data === 'string') {
-        data = JSON.parse(data)
-    }
-    for (const key in schema) {
-        switch (schema[key]) {
-            case 'String':
-                data[key] = data[key].toString()
+const idCard = (capture) => {
+    const regex_phoneNumber = /^id_card\.(th|en)$/g
+    const exec = regex_phoneNumber.exec(capture)
+    if (exec) {
+        const arg = exec[1].trim()
+        switch (arg) {
+            case 'th':
+                return genIdCard()
                 break
-            case 'Number':
-                data[key] = +data[key].toString()
+            case 'en':
+                return genIdCard()
                 break
-            case 'Boolean':
-                data[key] = JSON.parse(data[key])
-                break
-            case 'Array':
-                data[key] = JSON.parse(data[key])
-                break
-            case 'Object':
-                data[key] = JSON.parse(data[key])
-                break
-            default:
-                if (schema[key] instanceof Array) {
-                    if (data[key] instanceof Array) {
-                        const subSchema = schema[key][0]
-                        for (const idx in data[key]) {
-                            data[key][idx] = mapSchema(data[key][idx], subSchema)
-                        }
-                    }
-                } else if (typeof schema[key] === 'object') {
-                    data[key] = mapSchema(data[key], schema[key])
-                }
         }
     }
-    return data
+    return null
+}
+
+const phoneNumber = (capture) => {
+    const regex_phoneNumber = /^phone_number\.(th|en)$/g
+    const exec = regex_phoneNumber.exec(capture)
+    if (exec) {
+        const arg = exec[1].trim()
+        switch (arg) {
+            case 'th':
+                const first = ['06', '08', '09']
+                const last = Math.floor(Math.random() * (99999999 - 11111111) + 11111111).toString()
+                return first[Math.floor(Math.random()*first.length)] + last
+                break
+            case 'en':
+                return casual.phone
+                break
+        }
+    }
+    return null
 }
 
 const random = (capture) => {
@@ -108,4 +156,11 @@ const date = (capture) => {
         return new Date().getTime()
     }
     return null
+}
+
+const avatar = () => {
+    const avatarsPath = path.join(__dirname, '../images/avatars/')
+    const avatars = fs.readdirSync(avatarsPath)
+    const avatar = fs.readFileSync(avatarsPath + avatars[Math.floor(Math.random()*avatars.length)], 'base64')
+    return `data:image/png;base64,${avatar}`
 }
