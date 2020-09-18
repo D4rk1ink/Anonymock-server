@@ -59,7 +59,7 @@ export const update = async (req: Request, res: EResponse) => {
         const conditionBody = json.isJSON(condition.body)
         const conditionHeaders = json.isJSON(condition.headers)
         const conditionQueryString = json.isJSON(condition.queryString)
-        const responseBody = json.isJSON(response.body)
+        const responseBody = json.isJSON(response.body) || Array.isArray(response.body)
         const responseHeaders = json.isJSON(response.headers)
         if (conditionBody && conditionHeaders && conditionQueryString && responseBody && responseHeaders) {
             await Response.update(id, { name, condition, response })
