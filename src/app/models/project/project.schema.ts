@@ -23,6 +23,10 @@ const ProjectSchema = new Schema({
         type: String,
         default: ''
     },
+    forwardEndpoint: {
+        type: String,
+        default: ''
+    },
     environments: {
         type: Object,
         default: {}

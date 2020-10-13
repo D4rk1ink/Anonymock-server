@@ -29,7 +29,7 @@ export const getById = async (req: Request, res: Response) => {
     if (await verify.verifyAdmin(req, res) || await verify.verifyMember(req, res)) {
         try {
             const id = req.headers.projectid
-            const project = await Project.findById(id, 'id name status description repository environments')
+            const project = await Project.findById(id, 'id name status description repository forwardEndpoint environments')
             let data: any = {}
             if (project) {
                 data = {...project.toJSON()}
@@ -74,9 +74,9 @@ export const update = async (req: Request, res: Response) => {
     const id = req.params.id
     if (await verify.verifyAdmin(req, res) || await verify.verifyManager(req, res)) {
         try {
-            const { name, status, descripition, repository, environments } = req.body
-            await Project.update(id, { name, status, descripition, repository, environments })
-            const project = await Project.findById(id, 'id name status description repository environments')
+            const { name, status, description, repository, forwardEndpoint, environments } = req.body
+            await Project.update(id, { name, status, description, repository, forwardEndpoint, environments })
+            const project = await Project.findById(id, 'id name status description repository forwardEndpoint environments')
             res.json(preResponse.data(project))
         } catch (err) {
             res.json(preResponse.error(null, err.message))

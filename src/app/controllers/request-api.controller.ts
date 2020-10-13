@@ -1,10 +1,11 @@
-import { Request, Response, preResponse } from '../utils/express.util';
+import { Request, Response } from '../utils/express.util';
 import { Project } from '../models/project'
 import { Endpoint } from '../models/endpoint'
-import { Response as ResponseModel } from '../models/response'
 import { Method } from '../models/method'
 import { Log } from '../models/log'
-import * as json from '../utils/json.util'
+import * as _ from 'lodash'
+import * as qs from 'querystring'
+import * as HttpRequest from 'axios'
 import * as encrypt from '../utils/encrypt.util'
 import * as map from '../utils/map.util'
 import * as fake from '../utils/fake-data.util'
@@ -45,35 +46,46 @@ export const request = async (req: Request, res: Response) => {
                     extractBodyDbToken = database.extractDbToken(req.body, response.condition.body)
                 }
                 if (extractParamsDbToken && extractHeadersDbToken && extractQueryStringDbToken && extractBodyDbToken) {
-                    const dbTokens = [
-                        ...extractParamsDbToken,
-                        ...extractHeadersDbToken,
-                        ...extractQueryStringDbToken,
-                        ...extractBodyDbToken
-                    ]
-                    dataResponse = {}
-                    dataResponse.headers = response.response.headers
-                    dataResponse.statusCode = response.response.statusCode
-                    dataResponse.delay = response.response.delay
-                    
-                    if (dbTokens.length > 0) {
-                        const dbSelected = database.query(dbTokens, myProject.database.data, response.response.isFindOne)
-                        if (response.response.isFindOne) {
-                            if (dbSelected.length === 0) {
-                                dataResponse = null
+                    if (response.response.isForward) {
+                        const payload: any = {
+                            url: `${myProject.forwardEndpoint}/${path}`,
+                            queryString: req.query,
+                            headers: req.headers,
+                            body: req.body,
+                            method: myMethod.name
+                        }
+                        dataResponse = await forward(payload)
+                    } else {
+                        const dbTokens = [
+                            ...extractParamsDbToken,
+                            ...extractHeadersDbToken,
+                            ...extractQueryStringDbToken,
+                            ...extractBodyDbToken
+                        ]
+                        dataResponse = {}
+                        dataResponse.headers = response.response.headers
+                        dataResponse.statusCode = response.response.statusCode
+                        dataResponse.delay = response.response.delay
+                        
+                        if (dbTokens.length > 0) {
+                            const dbSelected = database.query(dbTokens, myProject.database.data, response.response.isFindOne)
+                            if (response.response.isFindOne) {
+                                if (dbSelected.length === 0) {
+                                    dataResponse = null
+                                } else {
+                                    dataResponse.headers = map.mapDatabase(response.response.headers, dbSelected[0])
+                                    dataResponse.body = map.mapDatabase(response.response.body, dbSelected[0])
+                                }
                             } else {
-                                dataResponse.headers = map.mapDatabase(response.response.headers, dbSelected[0])
-                                dataResponse.body = map.mapDatabase(response.response.body, dbSelected[0])
+                                dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
                             }
                         } else {
-                            dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
-                        }
-                    } else {
-                        if (database.hasDbToken(response.response.body)) {
-                            const dbSelected = myProject.database.data
-                            dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
-                        } else {
-                            dataResponse.body = response.response.body
+                            if (database.hasDbToken(response.response.body)) {
+                                const dbSelected = myProject.database.data
+                                dataResponse.body = dbSelected.map(db => map.mapDatabase(response.response.body, db))
+                            } else {
+                                dataResponse.body = response.response.body
+                            }
                         }
                     }
                 }
@@ -121,7 +133,7 @@ export const request = async (req: Request, res: Response) => {
                         .json(dataResponse.body)
                 }, dataResponse.delay)
             } else {
-                res.status(404).json({e:'Api not fount'})
+                res.status(404).json({e:'Api not found'})
             }
         } else {
             res.status(404).json({e:'Endpoint not found'})
@@ -147,3 +159,35 @@ const getParamsFromPath = (path: string, endpointPath: String) => {
     return params
 }
 
+const forward = async (req: {
+    url: string,
+    queryString: object,
+    headers: object,
+    body: object,
+    method: HttpRequest.Method
+}) => {
+    const isUrlEndCoded = _.isString(req.headers['content-type']) && /x-www-form-urlencoded/gi.test(req.headers['content-type'])
+    const options: HttpRequest.AxiosRequestConfig = {
+        method: req.method,
+        url: `${req.url}${!_.isEmpty(req.queryString) ? `?${qs.stringify(req.queryString)}` : ''}`,
+        headers: req.headers,
+        data: isUrlEndCoded ? req.body : req.body
+    }
+    return HttpRequest.default(options)
+        .then(res => {
+            return {
+                body: res.data,
+                headers: res.headers,
+                statusCode: res.status,
+                delay: 0,
+            }
+        })
+        .catch(err => {
+            return {
+                body: err.response.data,
+                headers: err.response.headers,
+                statusCode: err.response.status,
+                delay: 0,
+            }
+        })
+}
