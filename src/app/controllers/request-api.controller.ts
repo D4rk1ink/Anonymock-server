@@ -171,7 +171,7 @@ const forward = async (req: {
         method: req.method,
         url: `${req.url}${!_.isEmpty(req.queryString) ? `?${qs.stringify(req.queryString)}` : ''}`,
         headers: req.headers,
-        data: isUrlEndCoded ? req.body : req.body
+        data: isUrlEndCoded ? qs.stringify(req.body) : req.body
     }
     return HttpRequest.default(options)
         .then(res => {
