@@ -48,7 +48,7 @@ export const createUsers = async () => {
         try {
             await User.create(user)
         } catch (err) {
-            console.log(err)
+            console.error(err)
         }
     }
 }
@@ -60,7 +60,7 @@ export const createMethods = async () => {
             try {
                 await Method.create(method)
             } catch (err) {
-                console.log(err)
+                console.error(err)
             }
         }
     }
@@ -73,7 +73,7 @@ export const createProjectPositions = async () => {
             try {
                 await ProjectPosition.create(position)
             } catch (err) {
-                console.log(err)
+                console.error(err)
             }
         }
     }

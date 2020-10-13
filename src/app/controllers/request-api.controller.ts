@@ -54,7 +54,11 @@ export const request = async (req: Request, res: Response) => {
                             body: req.body,
                             method: myMethod.name
                         }
-                        dataResponse = await forward(payload)
+                        try {
+                            dataResponse = await forward(payload)
+                        } catch (err) {
+                            return res.status(500).json({e: err.message})
+                        }
                     } else {
                         const dbTokens = [
                             ...extractParamsDbToken,
@@ -115,31 +119,35 @@ export const request = async (req: Request, res: Response) => {
                         request: {
                             client: {},
                             headers: req.headers,
-                            body: req.body,
+                            body: JSON.stringify(req.body),
                             queryString: req.query
                         },
                         response: {
                             headers: dataResponse.headers,
-                            body: dataResponse.body,
+                            body: JSON.stringify(dataResponse.body),
                             delay: dataResponse.delay,
                             statusCode: dataResponse.statusCode
                         },
                         project: myProject.id
                     }
-                    await Log.create(log)
+                    try {
+                        await Log.create(log)
+                    } catch (err) {
+                        console.error(err)
+                    }
                     res
                         .status(dataResponse.statusCode)
                         .header(dataResponse.headers)
                         .json(dataResponse.body)
                 }, dataResponse.delay)
             } else {
-                res.status(404).json({e:'Api not found'})
+                res.status(404).json({e: 'Api not found'})
             }
         } else {
-            res.status(404).json({e:'Endpoint not found'})
+            res.status(404).json({e: 'Endpoint not found'})
         }
     } else {
-        res.status(404).json({e:'Project not found'})
+        res.status(404).json({e: 'Project not found'})
     }
 }
 
@@ -183,11 +191,15 @@ const forward = async (req: {
             }
         })
         .catch(err => {
-            return {
-                body: err.response.data,
-                headers: err.response.headers,
-                statusCode: err.response.status,
-                delay: 0,
+            if (!_.isNil(err.response)) {
+                return {
+                    body: err.response.data,
+                    headers: err.response.headers,
+                    statusCode: err.response.status,
+                    delay: 0,
+                }
+            } else {
+                throw err
             }
         })
 }
