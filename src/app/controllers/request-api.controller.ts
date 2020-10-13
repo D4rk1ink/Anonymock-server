@@ -1,9 +1,10 @@
-import { Request, Response } from '../utils/express.util';
+import { Request, Response, NextFunction } from '../utils/express.util';
 import { Project } from '../models/project'
 import { Endpoint } from '../models/endpoint'
 import { Method } from '../models/method'
 import { Log } from '../models/log'
 import * as _ from 'lodash'
+import * as proxy from 'express-http-proxy'
 import * as qs from 'querystring'
 import * as HttpRequest from 'axios'
 import * as encrypt from '../utils/encrypt.util'
@@ -11,7 +12,7 @@ import * as map from '../utils/map.util'
 import * as fake from '../utils/fake-data.util'
 import * as database from '../utils/database.util'
 
-export const request = async (req: Request, res: Response) => {
+export const request = async (req: Request, res: Response, next: NextFunction) => {
     const { id, environment, path } = req.params
     const method = req.method
     const myProject = await Project.findById(id)
@@ -48,14 +49,17 @@ export const request = async (req: Request, res: Response) => {
                 if (extractParamsDbToken && extractHeadersDbToken && extractQueryStringDbToken && extractBodyDbToken) {
                     if (response.response.isForward) {
                         const payload: any = {
+                            proxy: myProject.forwardEndpoint,
+                            path: path,
                             url: `${myProject.forwardEndpoint}/${path}`,
                             queryString: req.query,
                             headers: req.headers,
                             body: req.body,
-                            method: myMethod.name
+                            method: myMethod,
+                            project: myProject
                         }
                         try {
-                            dataResponse = await forward(payload)
+                            return await forward(payload, req, res, next)
                         } catch (err) {
                             return res.status(500).json({e: err.message})
                         }
@@ -167,40 +171,38 @@ const getParamsFromPath = (path: string, endpointPath: String) => {
     return params
 }
 
-const forward = async (req: {
-    url: string,
-    queryString: object,
-    headers: object,
-    body: object,
-    method: HttpRequest.Method
-}) => {
-    const isUrlEndCoded = _.isString(req.headers['content-type']) && /x-www-form-urlencoded/gi.test(req.headers['content-type'])
-    const options: HttpRequest.AxiosRequestConfig = {
-        method: req.method,
-        url: `${req.url}${!_.isEmpty(req.queryString) ? `?${qs.stringify(req.queryString)}` : ''}`,
-        headers: req.headers,
-        data: isUrlEndCoded ? qs.stringify(req.body) : req.body
-    }
-    console.log(JSON.stringify(options, null, 2))
-    return HttpRequest.default(options)
-        .then(res => {
-            return {
-                body: res.data,
-                headers: res.headers,
-                statusCode: res.status,
-                delay: 0,
-            }
-        })
-        .catch(err => {
-            if (!_.isNil(err.response)) {
-                return {
-                    body: err.response.data,
-                    headers: err.response.headers,
-                    statusCode: err.response.status,
+const forward = async (payload, req, res, next) => {
+    proxy(payload.proxy, {
+        proxyReqPathResolver: (_req) => {
+            return new Promise((resolve, reject) => {
+                return resolve(`/${payload.path}${!_.isEmpty(req.queryString) ? `?${qs.stringify(req.queryString)}` : ''}`)
+            })
+        } ,
+        userResDecorator: async (proxyRes: any, proxyResData, userReq, userRes) => {
+            const log = {
+                _id: encrypt.virtualId(7),
+                path: `/${payload.path}`,
+                method: payload.method.id,
+                request: {
+                    client: {},
+                    headers: userReq.headers,
+                    body: JSON.stringify(userReq.body),
+                    queryString: userReq.query
+                },
+                response: {
+                    headers: proxyRes.headers,
+                    body: proxyResData.toString('utf8'),
                     delay: 0,
-                }
-            } else {
-                throw err
+                    statusCode: proxyRes.statusCode
+                },
+                project: payload.project.id
             }
-        })
+            try {
+                await Log.create(log)
+            } catch (err) {
+                console.error(err)
+            }
+            return proxyResData
+        }
+    })(req, res, next)
 }
