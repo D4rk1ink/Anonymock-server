@@ -45,7 +45,7 @@ export const generate = async (req: Request, res: Response) => {
                 res.json(preResponse.error(null, 'Project not found'))        
             }
         } catch (err) {
-            console.log(err)
+            console.error(err)
             res.json(preResponse.error(null, 'Schema or model have problems'))
         }
     } else {
