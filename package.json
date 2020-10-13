@@ -6,11 +6,13 @@
     "start": "ts-node --inspect ./src/server.ts"
   },
   "dependencies": {
+    "@types/axios": "^0.14.0",
     "@types/body-parser": "^1.16.8",
     "@types/cors": "^2.8.3",
     "@types/dotenv": "^4.0.2",
     "@types/express": "^4.11.0",
     "@types/jsonwebtoken": "^7.2.5",
+    "@types/lodash": "^4.14.162",
     "@types/mongodb": "^3.0.5",
     "@types/mongoose": "^5.0.1",
     "@types/node": "^9.4.0",

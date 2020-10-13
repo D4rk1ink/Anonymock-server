@@ -61,6 +61,11 @@ const ResponseSchema = new Schema({
             type: Boolean,
             required: true,
             default: false
+        },
+        isForward: {
+            type: Boolean,
+            required: true,
+            default: false
         }
     },
     endpoint: {

@@ -7,6 +7,7 @@ interface IProjectModel extends Document {
     status: string
     description: string
     repository: string
+    forwardEndpoint: string
     environments: string
     folders: any[]
     database: any
