@@ -348,7 +348,6 @@ const getResponse = async (http, cb) => {
         default :
             return null 
     }
-    
 }
 
 const queryStringToPath = (data) => {
