@@ -181,6 +181,7 @@ const forward = async (req: {
         headers: req.headers,
         data: isUrlEndCoded ? qs.stringify(req.body) : req.body
     }
+    console.log(JSON.stringify(options, null, 2))
     return HttpRequest.default(options)
         .then(res => {
             return {
